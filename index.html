@@ -185,6 +185,8 @@ td .cust{font-weight:600} td .seg{font-size:11.5px;color:var(--faint);margin-top
 .routemap .truck-i{stroke:#fff;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 .routemap .veh-puck{fill:var(--surface);stroke:var(--map-route);stroke-width:2.5}
 .routemap .veh-ic{fill:none;stroke:var(--map-route);stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.routemap .veh-disc{fill:var(--map-route);stroke:#fff;stroke-width:2.5}
+.routemap .veh-arrow{fill:#fff}
 .routemap .veh-pulse{fill:var(--map-route);opacity:.3;transform-box:fill-box;transform-origin:center;animation:vehpulse 2.1s ease-out infinite}
 @keyframes vehpulse{0%{transform:scale(1);opacity:.35}70%{transform:scale(2.3);opacity:0}100%{transform:scale(2.3);opacity:0}}
 @media (prefers-reduced-motion:reduce){.routemap .veh-pulse{animation:none;opacity:.18}}
@@ -691,25 +693,26 @@ function routeMap(){
     /* secondary grid */
     '<path class="rd2" stroke-width="3" d="M300,74 L332,298"/><path class="rd2" stroke-width="3" d="M402,68 L430,298"/><path class="rd2" stroke-width="3" d="M505,66 L548,296"/>'+
     '<path class="rd2" stroke-width="3" d="M196,142 L762,132"/><path class="rd2" stroke-width="3" d="M214,212 L742,202"/><path class="rd2" stroke-width="3" d="M236,272 L720,262"/><path class="rd2" stroke-width="3" d="M520,66 L700,300"/>'+
-    /* main roads: coastal + East Bank (unrelated cross-traffic, behind the route road) */
+    /* cross street along the coast (unrelated traffic) */
     '<path class="rd2" stroke-width="5" d="M160,66 Q420,54 792,52"/>'+
-    /* the delivery’s own road — one continuous spine; the route below is drawn with the SAME coordinates so the truck always sits exactly on the road, not floating beside it */
-    '<path class="rd2" stroke-width="11" opacity="0.55" d="M660,100 Q480,92 300,125 Q250,145 235,255"/>'+
-    '<path class="rd" stroke-width="7" d="M660,100 Q480,92 300,125 Q250,145 235,255"/>'+
-    /* route travelled (solid) + remaining (dashed) — exact sub-segments of the road spine above */
-    '<path class="rte" stroke-width="4" d="M660,100 Q561,95.6 462,103.6"/>'+
-    '<path class="rte" stroke-width="4" stroke-dasharray="1 8" stroke-opacity="0.6" d="M462,103.6 Q381,110.2 300,125 Q250,145 235,255"/>'+
+    /* the delivery route follows real streets: west along a coastal avenue, then south down the East Bank road toward Houston. Grey road + blue route share the SAME spine, with 90-degree turns like a real city route. */
+    '<path class="rd2" stroke-width="12" opacity="0.5" d="M668,118 L430,118 Q398,118 393,150 L372,235 Q369,258 346,262 L258,262"/>'+
+    '<path class="rd" stroke-width="7.5" d="M668,118 L430,118 Q398,118 393,150 L372,235 Q369,258 346,262 L258,262"/>'+
+    /* route travelled (solid) + remaining (dashed) — exact sub-segments of the road above */
+    '<path class="rte" stroke-width="4.5" d="M668,118 L520,118"/>'+
+    '<path class="rte" stroke-width="4.5" stroke-dasharray="1 8" stroke-opacity="0.6" d="M520,118 L430,118 Q398,118 393,150 L372,235 Q369,258 346,262 L258,262"/>'+
     /* labels */
     '<text class="lbl-w" x="430" y="27" text-anchor="middle">ATLANTIC OCEAN</text>'+
     '<text class="lbl-w" x="58" y="210" text-anchor="middle" transform="rotate(-82 58 210)">DEMERARA RIVER</text>'+
-    '<text class="lbl" x="476" y="172">Georgetown</text>'+
-    '<text class="lbl-sm" x="300" y="250">Houston</text><text class="lbl-sm" x="438" y="302">Agricola</text><text class="lbl-sm" x="640" y="236">Ruimveldt</text>'+
-    /* depot marker — sits exactly at the road’s start point */
-    '<g transform="translate(660,100)"><rect class="mk-r" x="-8" y="-8" width="16" height="16" rx="4" stroke="#fff" stroke-width="2"/></g><text class="lbl" x="660" y="85" text-anchor="middle">Depot</text>'+
-    /* destination pin — sits exactly at the road’s end point */
-    '<g transform="translate(235,255)"><path class="mk-d" d="M0,0 C-9,-14 -9,-21 0,-25 C9,-21 9,-14 0,0 Z" stroke="#fff" stroke-width="1.5"/><circle cx="0" cy="-16" r="3" fill="#fff"/></g><text class="lbl" x="235" y="281" text-anchor="middle">Aggregates</text>'+
-    /* vehicle marker — live tanker puck, sits exactly on the road at the traveled/remaining split (tap for trip details) */
-    '<g transform="translate(462,103.6)" data-act="open-trip" data-id="'+tid+'" style="cursor:pointer"><circle r="26" fill="transparent"/><circle class="veh-pulse" r="15"/><circle class="veh-puck" r="15"/><g transform="scale(-1,1) translate(-9,-9.5) scale(0.78)" class="veh-ic">'+ICONS.tanker+'</g></g>'+
+    '<text class="lbl" x="500" y="175">Georgetown</text>'+
+    '<text class="lbl-sm" x="352" y="205" transform="rotate(88 352 205)">East Bank Rd</text>'+
+    '<text class="lbl-sm" x="300" y="250">Houston</text><text class="lbl-sm" x="470" y="300">Agricola</text><text class="lbl-sm" x="640" y="236">Ruimveldt</text>'+
+    /* depot marker — at the road start */
+    '<g transform="translate(668,118)"><rect class="mk-r" x="-8" y="-8" width="16" height="16" rx="4" stroke="#fff" stroke-width="2"/></g><text class="lbl" x="668" y="103" text-anchor="middle">Depot</text>'+
+    /* destination pin — at the road end */
+    '<g transform="translate(258,262)"><path class="mk-d" d="M0,0 C-9,-14 -9,-21 0,-25 C9,-21 9,-14 0,0 Z" stroke="#fff" stroke-width="1.5"/><circle cx="0" cy="-16" r="3" fill="#fff"/></g><text class="lbl" x="258" y="288" text-anchor="middle">Aggregates</text>'+
+    /* vehicle marker — navigation puck on the road, arrow points the way it is heading (west) (tap for trip details) */
+    '<g transform="translate(520,118)" data-act="open-trip" data-id="'+tid+'" style="cursor:pointer"><circle r="26" fill="transparent"/><circle class="veh-pulse" r="15"/><circle class="veh-disc" r="14"/><g transform="rotate(-90)"><path class="veh-arrow" d="M0,-7.5 L6.5,7 L0,3.3 L-6.5,7 Z"/></g></g>'+
   '</g></svg>'+
   '<div class="mapbadge">'+ic("tanker")+'Live · '+tid+'</div>'+
   '<div class="mapctrl"><button type="button" data-act="map-zoom" data-dir="in" aria-label="Zoom in">+</button><button type="button" data-act="map-zoom" data-dir="out" aria-label="Zoom out">−</button><button type="button" data-act="map-zoom" data-dir="reset" aria-label="Recenter">'+ic("pin")+'</button></div>'+
