@@ -535,7 +535,7 @@ function custBalance(name){return orders.filter(function(o){return o.customer===
 function initials(n){return n.split(" ").filter(Boolean).slice(0,2).map(function(w){return w[0];}).join("").toUpperCase();}
 
 var state={role:"owner",ownerTab:"overview",driverTab:"jobs",custTab:"order",preTripDone:false,unread:0,notifOpen:false,
-  auth:{owner:false,driver:false,customer:false},authMode:{owner:"login",driver:"login",customer:"login"},su:{customer:1,driver:1}};
+  auth:{owner:false,driver:false,customer:false},authMode:{owner:"login",driver:"login",customer:"login"},su:{customer:1,driver:1},custNotif:{delivery:true,invoice:true}};
 try{var th=localStorage.getItem("kfo-theme");if(th)document.documentElement.setAttribute("data-theme",th);}catch(e){}
 
 /* ---------- notifications ---------- */
@@ -739,7 +739,7 @@ function panelDispatch(){
   var scheduled=orders.filter(function(o){return o.status==="scheduled"||o.status==="in_transit";});
   var items=pending.length?pending.map(function(o){
     var opts=DRIVERS.map(function(d){return '<option value="'+d.id+'">'+esc(d.name)+" — "+esc(d.vehicle)+'</option>';}).join("");
-    return '<div class="item"><div class="t"><div><div class="cust">'+esc(o.customer)+'</div><div class="muted sm" style="margin-top:2px">'+PSHORT[o.prod]+' · '+fmt(o.litres)+' L · '+esc(o.addr)+'</div></div>'+stChip(o.status)+'</div><div class="row"><select data-assign="'+o.id+'">'+opts+'</select><button class="btn sm" data-act="dispatch" data-id="'+o.id+'">Assign</button></div></div>';
+    return '<div class="item"><div class="t"><div><div class="cust">'+esc(o.customer)+'</div><div class="muted sm" style="margin-top:2px">'+PSHORT[o.prod]+' · '+fmt(o.litres)+' L · '+esc(o.addr)+'</div></div>'+stChip(o.status)+'</div><div class="row"><select data-assign="'+o.id+'">'+opts+'</select><button class="btn sm" data-act="dispatch" data-id="'+o.id+'">Assign</button><button class="btn ghost sm" data-act="cancel-order" data-id="'+o.id+'">Cancel</button></div></div>';
   }).join(""):'<div class="empty">All orders dispatched. New customer orders land here.</div>';
   var sched=scheduled.map(function(o){return '<tr><td><span class="oid">'+o.id+'</span></td><td><span class="cust">'+esc(o.customer)+'</span></td><td>'+esc(driverName(o.driver))+'</td><td>'+esc(o.eta||"—")+'</td><td>'+stChip(o.status)+'</td></tr>';}).join("");
   return '<div class="panel-h"><h2>Dispatch</h2><button class="btn sm" data-act="open-new-order">'+ic("plus")+'New order</button></div>'+
@@ -840,7 +840,7 @@ function driverJobs(){
       '<div class="addr">'+ic("pin")+'<span>'+esc(o.addr)+'</span></div>'+
       (instr?'<div class="instr">'+ic("alert")+'<span>'+esc(instr)+'</span></div>':'')+
       '<div class="contact"><button class="cbtn" data-act="contact" data-kind="call" data-name="'+esc(o.customer)+'">'+ic("phone")+'Call</button><button class="cbtn" data-act="contact" data-kind="wa" data-name="'+esc(o.customer)+'">'+ic("chat")+'WhatsApp</button></div>'+
-      '<div class="jf"><button class="btn ghost sm" data-act="noop">'+ic("nav")+'Navigate</button>'+action+'</div></div>';
+      '<div class="jf"><button class="btn ghost sm" data-act="navigate" data-name="'+esc(o.customer)+'">'+ic("nav")+'Navigate</button>'+action+'</div></div>';
   }).join(""):'<div class="empty">No open jobs — all deliveries done.</div>';
   return stats+pretrip+'<div class="group-lbl">Today’s stops</div>'+cards+(done.length?'<button class="link" data-act="dtab" data-tab="history" style="align-self:center;padding:6px">View '+done.length+' completed →</button>':'');
 }
@@ -916,7 +916,8 @@ function custOrders(){
   var rows=mine.map(function(o){
     var right,sub;
     if(o.status==="delivered"){sub=o.paid?"Delivered · paid":"Delivered · invoice due";right='<div class="rowbtns"><button class="btn ghost sm" data-act="open-receipt" data-id="'+o.id+'">Receipt</button><button class="btn ghost sm" data-act="reorder" data-id="'+o.id+'">Reorder</button></div>';}
-    else {sub=o.eta?"ETA "+esc(o.eta):"awaiting dispatch";right=stChip(o.status);}
+    else if(o.status==="in_transit"){sub=o.eta?"ETA "+esc(o.eta):"on the way";right=stChip(o.status);}
+    else {sub=o.eta?"ETA "+esc(o.eta):"awaiting dispatch";right='<div class="rowbtns">'+stChip(o.status)+'<button class="btn ghost sm" data-act="cancel-order" data-id="'+o.id+'">Cancel</button></div>';}
     return '<div class="mrow"><div><div class="mi">'+PSHORT[o.prod]+' · '+fmt(o.litres)+' L</div><div class="ms"><span class="oid">'+o.id+'</span> · '+sub+' · '+gyd(value(o))+'</div></div>'+right+'</div>';
   }).join("");
   var tripHtml=(active&&active.status==="in_transit")?'<div class="block"><div class="bh"><h3>'+ic("truck")+'Live tracking</h3>'+stChip("in_transit")+'</div><div class="bd" style="display:flex;flex-direction:column;gap:11px">'+tripCard(active)+'</div></div>':"";
@@ -948,7 +949,7 @@ function custPrices(){
 function custAccount(){
   var cu=CUSTOMERS.find(function(x){return x.name===CUSTOMER_ME;})||{};
   var bal=custBalance(CUSTOMER_ME);var used=Math.min(100,Math.round(bal/(cu.limit||1)*100));
-  var sites=CUST_SITES.map(function(s){return '<div class="site">'+ic("pin")+'<div><div class="nm">'+esc(s.name)+'</div><div class="rg">'+esc(s.region)+'</div></div>'+(s.primary?'<span class="def">Default</span>':'')+'</div>';}).join("");
+  var sites=CUST_SITES.map(function(s,i){return '<div class="site">'+ic("pin")+'<div><div class="nm">'+esc(s.name)+'</div><div class="rg">'+esc(s.region)+'</div></div>'+(s.primary?'<span class="def">Default</span>':'<button class="btn ghost sm" data-act="remove-site" data-i="'+i+'" style="margin-left:auto">Remove</button>')+'</div>';}).join("");
   return '<div class="prof"><div class="avatar">'+initials(CUSTOMER_ME)+'</div><div><div class="nm">'+esc(CUSTOMER_ME)+'</div><div class="sub">'+esc(cu.segment||"")+'</div></div></div>'+
     '<div class="block"><div class="bh"><h3>'+ic("cash")+'Credit</h3></div><div class="bd">'+
       '<div class="meter"><span style="width:'+used+'%;background:'+(used>80?'var(--crit)':'var(--ink)')+'"></span></div>'+
@@ -958,13 +959,13 @@ function custAccount(){
       '<div class="kv"><span class="k">Payment terms</span><span class="vv">'+esc(cu.terms||"")+'</span></div>'+
       '<div class="kv"><span class="k">Account manager</span><span class="vv">Kris Industries · Sales</span></div>'+
     '</div></div>'+
-    '<div class="block"><div class="bh"><h3>'+ic("pin")+'Delivery sites</h3></div><div class="bd">'+sites+'</div></div>'+
+    '<div class="block"><div class="bh"><h3>'+ic("pin")+'Delivery sites</h3><button class="btn sm" data-act="add-site">'+ic("plus")+'Add</button></div><div class="bd">'+sites+'</div></div>'+
     '<div class="block"><div class="bh"><h3>'+ic("phone")+'Support</h3></div><div class="bd">'+
       '<div class="kv"><span class="k">Phone / WhatsApp</span><span class="selectable">+592 600 0000</span></div>'+
       '<div class="kv"><span class="k">Email</span><span class="selectable">ops@krisindustries.gy</span></div></div></div>'+
     '<div class="block"><div class="bh"><h3>Notifications</h3></div><div class="bd">'+
-      '<div class="toggle"><span class="sm" style="font-weight:600">Delivery updates</span><button class="sw" data-act="noop" aria-pressed="true"></button></div>'+
-      '<div class="toggle"><span class="sm" style="font-weight:600">Invoice reminders</span><button class="sw" data-act="noop" aria-pressed="true"></button></div>'+
+      '<div class="toggle"><span class="sm" style="font-weight:600">Delivery updates</span><button class="sw" data-act="toggle-notif" data-k="delivery" aria-pressed="'+state.custNotif.delivery+'"></button></div>'+
+      '<div class="toggle"><span class="sm" style="font-weight:600">Invoice reminders</span><button class="sw" data-act="toggle-notif" data-k="invoice" aria-pressed="'+state.custNotif.invoice+'"></button></div>'+
     '</div></div>'+
     '<button class="btn ghost block" data-act="logout" data-role="customer">Sign out</button>';
 }
@@ -1061,6 +1062,15 @@ function openPretrip(){
 }
 
 /* ---------- owner: new order sheet ---------- */
+function openAddSite(){
+  document.getElementById("sheet-root").innerHTML='<div class="overlay" data-act="close-sheet"><div class="sheet">'+
+    '<div class="sh-top"><h3>Add delivery site</h3><button class="x" data-act="close-sheet" aria-label="Close">×</button></div>'+
+    '<div class="sh-sub">A new drop-off location for your orders</div>'+
+    '<div class="field"><label>Site name</label><input id="as-name" type="text" placeholder="e.g. Diamond yard"></div>'+
+    '<div class="field"><label>Region</label><select id="as-region"><option>Region 4</option><option>Region 3</option><option>Region 2</option><option>Region 8</option><option>Region 10</option></select></div>'+
+    '<button class="btn block" data-act="save-site">'+ic("plus")+'Add site</button>'+
+  '</div></div>';
+}
 function openNewOrder(){
   var custOpts=CUSTOMERS.map(function(c){return '<option>'+esc(c.name)+'</option>';}).join("");
   document.getElementById("sheet-root").innerHTML='<div class="overlay" data-act="close-sheet"><div class="sheet">'+
@@ -1146,6 +1156,12 @@ document.addEventListener("click",function(e){
   else if(act==="cwhen"){cDraft.when=el.dataset.when;renderCustomer();}
   else if(act==="crecur"){cDraft.recurring=!cDraft.recurring;renderCustomer();}
   else if(act==="reorder"){var ro=orders.find(function(x){return x.id===el.dataset.id;});if(ro){var nid="KI-"+(seq++);orders.unshift({id:nid,customer:CUSTOMER_ME,prod:ro.prod,litres:ro.litres,status:"pending",driver:null,addr:ro.addr,today:true,paid:false,eta:null,proof:null});logEvent(nid+" re-ordered by "+CUSTOMER_ME);state.custTab="orders";renderCustomer();toast("Re-ordered — "+nid);}}
+  else if(act==="cancel-order"){var ci=orders.findIndex(function(x){return x.id===el.dataset.id;});if(ci>-1){var co=orders[ci];orders.splice(ci,1);logEvent(co.id+" cancelled");if(state.role==="owner")renderOwner();else renderCustomer();toast("Order "+co.id+" cancelled");}}
+  else if(act==="navigate"){toast("Opening navigation to "+(el.dataset.name||"destination")+"…");}
+  else if(act==="toggle-notif"){var k=el.dataset.k;state.custNotif[k]=!state.custNotif[k];renderCustomer();}
+  else if(act==="add-site")openAddSite();
+  else if(act==="save-site"){var nm=(document.getElementById("as-name").value||"").trim();if(!nm){toast("Enter a site name");return;}var rg=document.getElementById("as-region").value;CUST_SITES.push({name:nm,region:rg});closeSheet();renderCustomer();toast("Site added — "+nm);}
+  else if(act==="remove-site"){var si=parseInt(el.dataset.i,10);if(si>-1&&CUST_SITES[si]&&!CUST_SITES[si].primary){var rn=CUST_SITES[si].name;CUST_SITES.splice(si,1);if(cDraft.site>=CUST_SITES.length)cDraft.site=0;renderCustomer();toast("Site removed — "+rn);}}
   else if(act==="map-zoom"){var dir=el.dataset.dir;if(dir==="reset"){if(mapS){mapS.k=1;mapS.tx=0;mapS.ty=0;mapApply();}}else mapZoomAt(400,160,dir==="in"?1.4:0.714);}
   else if(act==="pay-all"){var n=0;orders.forEach(function(o){if(o.customer===CUSTOMER_ME&&o.status==="delivered"&&!o.paid){o.paid=true;n++;}});if(n){logEvent(n+" invoice(s) paid via MMG by "+CUSTOMER_ME);renderCustomer();toast(n+" invoice(s) paid");}}
 },false);
