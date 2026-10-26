@@ -1,0 +1,1150 @@
+<title>Kris Fuel Ops</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap">
+<style>
+/* Flat utilitarian ops tool: sidebar + content shell for Owner; phone frames for Driver/Customer. Borders not shadows, no gradients. */
+:root{
+  --bg:#f5f6f7; --surface:#ffffff; --surface-2:#f2f3f5; --surface-3:#e9ebee;
+  --ink:#1b1e22; --muted:#616871; --faint:#9298a0; --line:#e4e6ea; --line-2:#d3d7dd;
+  --brand:#0b5fd0; --brand-strong:#0a4fb0; --brand-soft:#e9f1fd; --primary:#0b5fd0; --primary-ink:#ffffff; --link:#0b5fd0;
+  --ok:#1f844a; --ok-bg:#eaf3ec; --warn:#a76316; --warn-bg:#f4ecdf; --crit:#bd3a32; --crit-bg:#f5e5e3;
+  --map-water:#aacfe6; --map-land:#edeae1; --map-green:#d6e5c8; --map-road:#ffffff; --map-road2:#e5e1d5; --map-route:#0b5fd0; --map-label:#58666f;
+  --r:6px; --r-sm:4px;
+  --font:"IBM Plex Sans",system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#14171b; --surface:#1a1e23; --surface-2:#20252b; --surface-3:#272d34;
+  --ink:#e6e8eb; --muted:#99a1aa; --faint:#69717a; --line:#2a2f36; --line-2:#3a414a;
+  --brand:#3f86ee; --brand-strong:#5a98f0; --brand-soft:#15263c; --primary:#3f86ee; --primary-ink:#ffffff; --link:#6196ee;
+  --ok:#33b06c; --ok-bg:#16291f; --warn:#d49242; --warn-bg:#2e2615; --crit:#e2655d; --crit-bg:#331d1b;
+  --map-water:#122230; --map-land:#1e262d; --map-green:#1d2d26; --map-road:#3a434d; --map-road2:#2b343d; --map-route:#3f86ee; --map-label:#8a98a3;
+  color-scheme:dark;
+}}
+:root[data-theme="dark"]{
+  --bg:#14171b; --surface:#1a1e23; --surface-2:#20252b; --surface-3:#272d34;
+  --ink:#e6e8eb; --muted:#99a1aa; --faint:#69717a; --line:#2a2f36; --line-2:#3a414a;
+  --brand:#3f86ee; --brand-strong:#5a98f0; --brand-soft:#15263c; --primary:#3f86ee; --primary-ink:#ffffff; --link:#6196ee;
+  --ok:#33b06c; --ok-bg:#16291f; --warn:#d49242; --warn-bg:#2e2615; --crit:#e2655d; --crit-bg:#331d1b;
+  --map-water:#122230; --map-land:#1e262d; --map-green:#1d2d26; --map-road:#3a434d; --map-road2:#2b343d; --map-route:#3f86ee; --map-label:#8a98a3;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--font);font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:40;background:var(--surface)}
+h1,h2,h3,h4{margin:0;font-weight:600}
+button{font-family:inherit;cursor:pointer;color:inherit}
+.mono{font-family:var(--mono);font-variant-numeric:tabular-nums}
+.ic{width:16px;height:16px;flex:none;display:inline-block;vertical-align:-3px}
+.muted{color:var(--muted)} .faint{color:var(--faint)} .sm{font-size:12.5px}
+
+/* ---- top bar ---- */
+.bar{position:sticky;top:env(safe-area-inset-top,0px);z-index:41;background:var(--surface);border-bottom:1px solid var(--line);
+  padding-block:0;padding-left:max(14px,env(safe-area-inset-left,0px));padding-right:max(14px,env(safe-area-inset-right,0px))}
+.bar-in{max-width:1200px;margin:0 auto;display:flex;align-items:center;gap:10px;height:52px;flex-wrap:nowrap}
+.brand{display:flex;align-items:center;gap:9px;font-weight:700;font-size:15px;letter-spacing:-.01em;flex:none;white-space:nowrap}
+.brand .logo{width:26px;height:26px;border-radius:5px;flex:none}
+.brand .v{font-size:10.5px;color:var(--faint);font-weight:500;font-family:var(--mono);border:1px solid var(--line);padding:1px 5px;border-radius:4px}
+.spacer{flex:1}
+.tabs{display:inline-flex;border:1px solid var(--line-2);border-radius:var(--r-sm);overflow:hidden}
+.tabs button{border:0;border-right:1px solid var(--line);background:var(--surface);color:var(--muted);font-weight:500;font-size:13px;padding:7px 14px;display:flex;align-items:center;gap:7px}
+.tabs button:last-child{border-right:0}
+.tabs button[aria-pressed="true"]{background:var(--surface-3);color:var(--ink);font-weight:600}
+.iconbtn{position:relative;border:1px solid var(--line-2);background:var(--surface);color:var(--muted);width:32px;height:32px;border-radius:var(--r-sm);display:grid;place-items:center}
+.badge{position:absolute;top:-5px;right:-5px;min-width:15px;height:15px;padding:0 3px;border-radius:8px;background:var(--crit);color:#fff;font-size:9px;font-weight:700;display:grid;place-items:center;font-family:var(--mono);border:1.5px solid var(--surface)}
+@media (max-width:460px){.brand span:not(.v){display:none}.brand .v{display:none}.tabs button{padding:7px 11px}}
+
+main{max-width:1200px;margin:0 auto;padding-block:16px 60px;
+  padding-left:max(14px,env(safe-area-inset-left,0px));padding-right:max(14px,env(safe-area-inset-right,0px))}
+
+.note{display:flex;align-items:center;gap:10px;background:var(--surface-2);border:1px solid var(--line);border-radius:var(--r);
+  padding:9px 12px;margin-bottom:16px;font-size:12.5px;color:var(--muted)}
+.note button{margin-left:auto;border:0;background:transparent;color:var(--link);font-weight:600;font-size:12.5px;flex:none}
+
+/* ---- notifications dropdown ---- */
+.notif{position:fixed;top:calc(52px + env(safe-area-inset-top,0px) + 6px);right:max(14px,env(safe-area-inset-right,0px));
+  width:320px;max-width:88vw;z-index:55;background:var(--surface);border:1px solid var(--line-2);border-radius:var(--r);overflow:hidden}
+.notif .nh{padding:10px 13px;border-bottom:1px solid var(--line);font-size:11px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--faint);display:flex;justify-content:space-between}
+.notif .nlist{max-height:340px;overflow:auto}
+.notif .ni{display:flex;gap:9px;padding:10px 13px;border-bottom:1px solid var(--line);font-size:12.5px}
+.notif .ni:last-child{border-bottom:0}
+.notif .ni .ic{color:var(--muted);margin-top:1px;width:14px;height:14px}
+.notif .ni .tm{color:var(--faint);font-family:var(--mono);font-size:10.5px;margin-top:3px}
+
+/* ---- owner shell ---- */
+.shell{display:grid;grid-template-columns:192px 1fr;gap:16px;align-items:start}
+.side{display:flex;flex-direction:column;gap:1px;position:sticky;top:76px}
+.side .nav{border:0;background:transparent;text-align:left;display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:var(--r-sm);color:var(--muted);font-weight:500;font-size:13.5px;width:100%}
+.side .nav .ic{color:var(--faint)}
+.side .nav[aria-current="true"]{background:var(--brand-soft);color:var(--brand);font-weight:600}
+.side .nav[aria-current="true"] .ic{color:var(--brand)}
+.side .nav .count{margin-left:auto;font-family:var(--mono);font-size:11px;color:var(--crit);font-weight:600}
+.side .lbl{font-size:10.5px;letter-spacing:.07em;text-transform:uppercase;color:var(--faint);font-weight:600;padding:12px 10px 5px}
+@media (max-width:820px){
+  .shell{grid-template-columns:1fr}
+  .side{position:static;flex-direction:row;overflow-x:auto;border-bottom:1px solid var(--line);padding-bottom:4px;gap:2px}
+  .side .lbl{display:none} .side .nav{width:auto;white-space:nowrap}
+  .side .nav .count{margin-left:6px}
+}
+
+.panel-h{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin:2px 0 14px}
+.panel-h h2{font-size:17px;letter-spacing:-.01em}
+.panel-h .meta{font-size:12px;color:var(--faint);font-family:var(--mono)}
+
+.block{border:1px solid var(--line);border-radius:var(--r);background:var(--surface);margin-bottom:16px}
+.block>.bh{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:11px 14px;border-bottom:1px solid var(--line)}
+.block>.bh h3{font-size:13px;font-weight:600;display:flex;align-items:center;gap:8px}
+.block>.bh h3 .ic{color:var(--muted)}
+.block>.bd{padding:14px}
+.block>.bd.flush{padding:0}
+
+/* stat strip */
+.stats{display:grid;grid-template-columns:repeat(4,1fr)}
+.stats.s3{grid-template-columns:repeat(3,1fr)}
+.stat{padding:13px 15px;border-right:1px solid var(--line)}
+.stat:last-child{border-right:0}
+.stat .l{font-size:11.5px;color:var(--muted);font-weight:500}
+.stat .v{font-family:var(--mono);font-size:21px;font-weight:600;margin-top:5px;letter-spacing:-.01em}
+.stat .v small{font-size:12px;color:var(--faint);font-weight:500}
+.stat .d{font-size:11px;color:var(--faint);margin-top:2px}
+.stat.warn .v{color:var(--crit)} .stat.good .v{color:var(--ok)}
+@media (max-width:560px){.stats{grid-template-columns:repeat(2,1fr)}.stats.s3{grid-template-columns:repeat(3,1fr)}.stat:nth-child(2):not(.s3 .stat){border-right:0}}
+
+/* status pill */
+.st{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:600;padding:2px 7px;border-radius:var(--r-sm);border:1px solid var(--line-2);background:var(--surface-2);color:var(--muted);white-space:nowrap}
+.st .d{width:6px;height:6px;border-radius:50%;flex:none}
+.st[data-s="pending"] .d{background:var(--crit)} .st[data-s="pending"]{color:var(--crit);border-color:color-mix(in srgb,var(--crit) 40%,var(--line-2));background:var(--crit-bg)}
+.st[data-s="scheduled"] .d{background:var(--link)}
+.st[data-s="in_transit"] .d{background:var(--warn)} .st[data-s="in_transit"]{color:var(--warn)}
+.st[data-s="delivered"] .d{background:var(--ok)} .st[data-s="delivered"]{color:var(--ok)}
+.pill-paid{color:var(--ok);font-weight:600;font-size:11.5px} .pill-due{color:var(--crit);font-weight:600;font-size:11.5px}
+
+/* table */
+.tw{overflow-x:auto}
+table{width:100%;border-collapse:collapse}
+th{text-align:left;font-size:10.5px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--faint);padding:9px 14px;border-bottom:1px solid var(--line-2);background:var(--surface-2);white-space:nowrap}
+td{padding:10px 14px;border-bottom:1px solid var(--line);font-size:13px;white-space:nowrap}
+tbody tr:last-child td{border-bottom:0}
+tbody tr:hover td{background:var(--surface-2)}
+td.num,th.num{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-nums}
+td .oid{font-family:var(--mono);font-size:12px;color:var(--muted)}
+td .cust{font-weight:600} td .seg{font-size:11.5px;color:var(--faint);margin-top:1px}
+
+/* dispatch */
+.disp{display:flex;flex-direction:column}
+.disp .item{padding:13px 14px;border-bottom:1px solid var(--line)}
+.disp .item:last-child{border-bottom:0}
+.disp .t{display:flex;justify-content:space-between;gap:10px;align-items:start}
+.disp .cust{font-weight:600}
+.disp .row{display:flex;gap:8px;margin-top:11px}
+.disp select{flex:1;min-width:0;border:1px solid var(--line-2);background:var(--surface);color:var(--ink);border-radius:var(--r-sm);padding:7px 9px;font-family:inherit;font-size:13px}
+.empty{padding:22px 14px;text-align:center;color:var(--faint);font-size:12.5px}
+
+/* buttons */
+.btn{border:1px solid var(--primary);border-radius:var(--r-sm);padding:8px 13px;font-weight:600;font-size:13px;background:var(--primary);color:var(--primary-ink);display:inline-flex;align-items:center;gap:7px;justify-content:center}
+.btn.ghost{background:var(--surface);color:var(--ink);border-color:var(--line-2)}
+.btn.block{width:100%}
+.btn.sm{padding:6px 11px;font-size:12.5px}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+
+/* tanks */
+.tank{padding:13px 14px;border-bottom:1px solid var(--line)}
+.tank:last-child{border-bottom:0}
+.tank .top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:7px}
+.tank .nm{font-weight:600;font-size:13.5px}
+.tank .nm small{color:var(--faint);font-weight:500;margin-left:6px}
+.tank .pct{font-family:var(--mono);font-weight:600}
+.meter{height:8px;background:var(--surface-3);border-radius:2px;overflow:hidden;border:1px solid var(--line)}
+.meter>span{display:block;height:100%;background:var(--ink)}
+.tank.low .meter>span{background:var(--crit)} .tank.low .pct{color:var(--crit)}
+.tank .sub{font-size:11.5px;color:var(--faint);margin-top:5px;font-family:var(--mono)}
+
+/* report bars */
+.bars{display:flex;flex-direction:column;gap:13px}
+.bars .b .t{display:flex;justify-content:space-between;font-size:12.5px;margin-bottom:5px}
+.bars .b .t b{font-weight:600}
+.bars .b .t .n{font-family:var(--mono);color:var(--muted)}
+.track2{height:10px;background:var(--surface-3);border:1px solid var(--line);border-radius:2px;overflow:hidden}
+.track2>span{display:block;height:100%;background:var(--ink)}
+.cmeter{width:130px}.cmeter .track2{height:6px}
+
+/* map */
+.mapwrap{position:relative;line-height:0}
+.routemap{width:100%;height:auto;display:block;background:var(--map-land);cursor:grab;touch-action:none;-webkit-user-select:none;user-select:none}
+.routemap.grabbing{cursor:grabbing}
+.routemap .bld{fill:var(--map-road2);opacity:.55}
+.maphint{position:absolute;bottom:9px;right:10px;font-size:9px;color:var(--map-label);opacity:.85;background:color-mix(in srgb,var(--surface) 72%,transparent);padding:2px 7px;border-radius:3px;line-height:1}
+.routemap .water{fill:var(--map-water)}
+.routemap .green{fill:var(--map-green)}
+.routemap .rd{stroke:var(--map-road);fill:none;stroke-linecap:round;stroke-linejoin:round}
+.routemap .rd2{stroke:var(--map-road2);fill:none;stroke-linecap:round;stroke-linejoin:round}
+.routemap .rte{stroke:var(--map-route);fill:none;stroke-linecap:round}
+.routemap .mk-s{fill:var(--surface)} .routemap .mk-r{fill:var(--map-route)} .routemap .mk-d{fill:var(--ok)}
+.routemap .truck-i{stroke:#fff;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.routemap .veh-puck{fill:var(--surface);stroke:var(--map-route);stroke-width:2.5}
+.routemap .veh-ic{fill:none;stroke:var(--map-route);stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.routemap .veh-pulse{fill:var(--map-route);opacity:.3;transform-box:fill-box;transform-origin:center;animation:vehpulse 2.1s ease-out infinite}
+@keyframes vehpulse{0%{transform:scale(1);opacity:.35}70%{transform:scale(2.3);opacity:0}100%{transform:scale(2.3);opacity:0}}
+@media (prefers-reduced-motion:reduce){.routemap .veh-pulse{animation:none;opacity:.18}}
+.routemap .lbl{fill:var(--map-label);font-family:var(--font);font-size:11px;font-weight:600}
+.routemap .lbl-w{fill:var(--map-label);font-family:var(--font);font-size:10px;font-weight:600;letter-spacing:.14em;opacity:.7}
+.routemap .lbl-sm{fill:var(--map-label);font-family:var(--font);font-size:8.5px;font-weight:500;opacity:.85}
+.mapctrl{position:absolute;top:10px;right:10px;display:flex;flex-direction:column;border:1px solid var(--line-2);border-radius:var(--r-sm);overflow:hidden}
+.mapctrl button{border:0;border-bottom:1px solid var(--line);background:var(--surface);color:var(--muted);width:28px;height:28px;font-size:16px;line-height:1;display:grid;place-items:center}
+.mapctrl button:last-child{border-bottom:0}
+.mapscale{position:absolute;bottom:9px;left:10px;font-size:9px;color:var(--map-label);font-family:var(--mono);display:flex;align-items:center;gap:5px;line-height:1}
+.mapscale i{display:block;width:44px;height:5px;border:1px solid var(--map-label);border-top:0}
+.mapbadge{position:absolute;top:10px;left:10px;background:color-mix(in srgb,var(--surface) 86%,transparent);border:1px solid var(--line);border-radius:var(--r-sm);padding:4px 9px;font-size:11px;font-weight:600;color:var(--ink);display:flex;align-items:center;gap:6px;line-height:1}
+.mapbadge .ic{width:13px;height:13px;color:var(--map-route)}
+.trip-foot{display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--muted);padding:11px 14px;border-top:1px solid var(--line)}
+.trip-foot .ic{color:var(--muted)}
+
+/* attention list */
+.att{display:flex;flex-direction:column}
+.att .r{display:flex;align-items:center;gap:10px;padding:11px 14px;border-bottom:1px solid var(--line);font-size:13px}
+.att .r:last-child{border-bottom:0}
+.att .r .ic{flex:none}
+.att .r .tag{margin-left:auto;font-size:11px;font-weight:600;color:var(--muted)}
+.att .r.crit .ic{color:var(--crit)} .att .r.warn .ic{color:var(--warn)}
+
+/* ---- phone frame ---- */
+.stage{display:flex;justify-content:center;padding-top:4px}
+.phone{width:100%;max-width:400px;background:var(--surface);border:1px solid var(--line-2);border-radius:26px;overflow:hidden}
+.sbar{display:flex;justify-content:space-between;align-items:center;padding:9px 20px 4px;font-size:12px;font-weight:600;color:var(--muted);font-family:var(--mono)}
+.sbar .r{display:flex;gap:7px;align-items:center}.sbar .r .ic{width:14px;height:14px;color:var(--muted)}
+.ptop{padding:3px 16px 13px;border-bottom:1px solid var(--line)}
+.ptop h3{font-size:16px;letter-spacing:-.01em}
+.ptop .who{font-size:12px;color:var(--muted);margin-top:3px}
+.pbody{padding:14px;display:flex;flex-direction:column;gap:12px}
+.group-lbl{font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--faint);font-weight:600}
+
+.job{border:1px solid var(--line);border-radius:var(--r);padding:12px}
+.job .jt{display:flex;justify-content:space-between;gap:8px;align-items:start}
+.job .stop{font-family:var(--mono);font-size:10.5px;color:var(--faint);font-weight:600;letter-spacing:.04em}
+.job .cust{font-weight:600;font-size:14.5px;margin-top:2px}
+.job .prod{font-family:var(--mono);font-size:12.5px;color:var(--muted);margin-top:2px}
+.job .addr{font-size:12.5px;color:var(--muted);margin-top:8px;display:flex;gap:7px;align-items:start}
+.job .addr .ic{color:var(--faint);margin-top:1px}
+.job .jf{display:flex;gap:8px;margin-top:12px}
+.job.done{background:var(--surface-2)}
+.job .proof{font-size:12px;color:var(--ok);margin-top:8px;display:flex;gap:7px;align-items:center}
+
+.callout{border:1px solid var(--line);border-left:3px solid var(--link);border-radius:var(--r);padding:11px 12px;background:var(--surface-2)}
+.callout .h{font-size:12px;font-weight:600;color:var(--ink);display:flex;align-items:center;gap:7px}
+.callout .h .ic{color:var(--link)}
+.callout p{margin:6px 0 0;font-size:12.5px;color:var(--muted)}
+.hr{height:1px;background:var(--line)}
+
+/* fields */
+.field{display:flex;flex-direction:column;gap:5px;margin-bottom:12px}
+.field>label{font-size:12px;font-weight:600;color:var(--muted)}
+.field input,.field select{border:1px solid var(--line-2);background:var(--surface);color:var(--ink);border-radius:var(--r-sm);padding:9px 10px;font-family:inherit;font-size:14px;width:100%}
+.field .hint{font-size:11.5px;color:var(--faint)}
+.seg{display:flex;border:1px solid var(--line-2);border-radius:var(--r-sm);overflow:hidden}
+.seg button{flex:1;border:0;border-right:1px solid var(--line);background:var(--surface);color:var(--muted);padding:9px 4px;font-size:12.5px;font-weight:600}
+.seg button:last-child{border-right:0}
+.seg button[aria-pressed="true"]{background:var(--surface-3);color:var(--ink)}
+.total{display:flex;justify-content:space-between;align-items:baseline;padding:11px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line);margin-bottom:13px}
+.total .l{font-size:13px;color:var(--muted)} .total .v{font-family:var(--mono);font-weight:600;font-size:17px}
+
+.prices .pr{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-top:1px solid var(--line)}
+.prices .pr:first-child{border-top:0}
+.prices .nm{font-weight:600;font-size:13.5px}.prices .nm small{display:block;color:var(--faint);font-weight:500;font-size:11.5px}
+.prices .v{font-family:var(--mono);font-weight:600}.prices .v small{color:var(--faint);font-weight:500}
+
+/* tracking */
+.track{display:flex;flex-direction:column;padding-left:2px}
+.track .s{display:flex;gap:11px;padding-bottom:13px;position:relative}
+.track .s:last-child{padding-bottom:0}
+.track .s .dot{width:16px;height:16px;border-radius:50%;flex:none;border:2px solid var(--line-2);background:var(--surface);z-index:1;display:grid;place-items:center}
+.track .s .dot .ic{width:9px;height:9px;color:#fff}
+.track .s.done .dot{background:var(--ok);border-color:var(--ok)}
+.track .s.now .dot{background:var(--warn);border-color:var(--warn)}
+.track .s::before{content:"";position:absolute;left:7px;top:16px;bottom:0;width:2px;background:var(--line-2)}
+.track .s:last-child::before{display:none}
+.track .s.done::before{background:var(--ok)}
+.track .s .lbl{font-size:13px;font-weight:600}
+.track .s.pending .lbl{color:var(--faint);font-weight:500}
+
+.mrow{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:10px 0;border-top:1px solid var(--line)}
+.mrow:first-child{border-top:0}
+.mrow .oid{font-family:var(--mono);font-size:11.5px;color:var(--muted)}
+.mrow .mi{font-weight:600;font-size:13px}
+.mrow .ms{font-size:11.5px;color:var(--faint)}
+
+/* delivery sheet */
+.overlay{position:fixed;inset:0;z-index:60;background:rgba(10,15,20,.45);display:flex;align-items:flex-end;justify-content:center}
+.sheet{background:var(--surface);width:100%;max-width:440px;border-radius:14px 14px 0 0;max-height:92vh;overflow:auto;border:1px solid var(--line-2);
+  padding:16px 16px calc(18px + env(safe-area-inset-bottom,0px))}
+@media (min-width:520px){.overlay{align-items:center}.sheet{border-radius:12px}}
+.sheet .sh-top{display:flex;justify-content:space-between;align-items:start;margin-bottom:3px}
+.sheet h3{font-size:16px}
+.sheet .x{border:1px solid var(--line-2);background:var(--surface);color:var(--muted);width:28px;height:28px;border-radius:var(--r-sm);font-size:16px;flex:none}
+.sheet .sh-sub{color:var(--muted);font-size:12.5px;margin-bottom:15px}
+.flabel{font-size:10.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--faint);font-weight:600;margin-bottom:6px}
+.sig{border:1px solid var(--line-2);border-radius:var(--r);background:var(--surface-2);position:relative;height:120px;overflow:hidden}
+.sig canvas{width:100%;height:100%;display:block;touch-action:none;cursor:crosshair}
+.sig .ph{position:absolute;inset:0;display:grid;place-items:center;color:var(--faint);font-size:12.5px;pointer-events:none}
+.sig-act{display:flex;justify-content:space-between;align-items:center;margin-top:6px}
+.link{border:0;background:transparent;color:var(--link);font-weight:600;font-size:12.5px;padding:0}
+.photo{border:1px dashed var(--line-2);background:var(--surface-2);color:var(--muted);border-radius:var(--r);padding:15px;width:100%;font-size:13px;font-weight:600;display:flex;align-items:center;justify-content:center;gap:9px}
+.photo .ic{color:var(--muted)}
+.photo-ok{border:1px solid var(--ok);background:var(--ok-bg);color:var(--ok);border-radius:var(--r);padding:12px;display:flex;align-items:center;gap:9px;font-weight:600;font-size:12.5px}
+.photo-ok .ic{color:var(--ok)}
+.dl-input{border:1px solid var(--line-2);background:var(--surface);color:var(--ink);border-radius:var(--r-sm);padding:10px;font-family:var(--mono);font-size:16px;font-weight:600;width:100%}
+
+.toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%) translateY(16px);z-index:80;background:var(--ink);color:var(--bg);
+  padding:10px 16px;border-radius:var(--r);font-size:13px;font-weight:600;opacity:0;transition:opacity .2s,transform .2s;max-width:90vw;display:flex;align-items:center;gap:8px}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.toast .ic{color:var(--ok)}
+:focus-visible{outline:2px solid var(--link);outline-offset:2px}
+
+/* phone bottom nav + deeper app screens */
+.pnav{display:flex;border-top:1px solid var(--line);background:var(--surface)}
+.pnav button{flex:1;border:0;background:transparent;color:var(--faint);padding:9px 2px 10px;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:10px;font-weight:600}
+.pnav button .ic{width:19px;height:19px}
+.pnav button[aria-current="true"]{color:var(--brand)}
+.pnav button[aria-current="true"] .ic{color:var(--map-route)}
+.dstats{display:flex;border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+.dstats .d{flex:1;padding:10px 6px;border-right:1px solid var(--line);text-align:center}
+.dstats .d:last-child{border-right:0}
+.dstats .v{font-family:var(--mono);font-weight:600;font-size:16px}
+.dstats .l{font-size:9px;letter-spacing:.04em;color:var(--muted);margin-top:2px}
+.contact{display:flex;gap:7px;margin-top:10px}
+.contact .cbtn{flex:1;border:1px solid var(--line-2);background:var(--surface);border-radius:var(--r-sm);padding:7px;font-size:12px;font-weight:600;display:flex;align-items:center;justify-content:center;gap:6px;color:var(--ink)}
+.contact .cbtn .ic{width:14px;height:14px;color:var(--muted)}
+.instr{font-size:12px;color:var(--muted);margin-top:8px;background:var(--surface-2);border-radius:var(--r-sm);padding:8px 10px;display:flex;gap:7px}
+.instr .ic{color:var(--warn);width:14px;height:14px;flex:none;margin-top:1px}
+.chat{display:flex;flex-direction:column;gap:9px;margin-bottom:10px}
+.msg{max-width:82%;padding:8px 11px;border-radius:12px;font-size:12.5px;line-height:1.4}
+.msg.them{background:var(--surface-3);align-self:flex-start;border-bottom-left-radius:3px}
+.msg.me{background:var(--map-route);color:#fff;align-self:flex-end;border-bottom-right-radius:3px}
+.msg .tm{font-size:9.5px;opacity:.7;margin-top:3px;font-family:var(--mono)}
+.chatbar{display:flex;gap:7px}
+.chatbar input{flex:1;border:1px solid var(--line-2);background:var(--surface);color:var(--ink);border-radius:20px;padding:9px 13px;font-family:inherit;font-size:13px}
+.chatbar .sb{border:0;background:var(--map-route);color:#fff;width:38px;height:38px;border-radius:50%;flex:none;display:grid;place-items:center}
+.check{display:flex;flex-direction:column}
+.check label{display:flex;align-items:center;gap:11px;padding:11px 0;border-top:1px solid var(--line);font-size:13px;cursor:pointer}
+.check label:first-child{border-top:0}
+.check input{width:18px;height:18px;accent-color:var(--map-route);flex:none}
+.prof{display:flex;align-items:center;gap:13px;margin-bottom:12px}
+.prof .avatar{width:52px;height:52px;border-radius:50%;background:var(--surface-3);display:grid;place-items:center;font-weight:700;font-size:18px;color:var(--muted);flex:none}
+.prof .nm{font-weight:600;font-size:16px}.prof .sub{font-size:12.5px;color:var(--muted);margin-top:2px}
+.kv{display:flex;justify-content:space-between;gap:10px;padding:10px 0;border-top:1px solid var(--line);font-size:13px}
+.kv:first-child{border-top:0}.kv .k{color:var(--muted)}.kv .vv{font-weight:600;text-align:right}
+.site{display:flex;align-items:center;gap:10px;padding:11px 0;border-top:1px solid var(--line);font-size:13px}
+.site:first-child{border-top:0}.site>.ic{color:var(--muted);flex:none}.site .nm{font-weight:600}.site .rg{font-size:11.5px;color:var(--faint)}
+.site .def{margin-left:auto;font-size:10px;font-weight:600;color:var(--ok);border:1px solid var(--ok);border-radius:4px;padding:1px 6px}
+.toggle{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 0;border-top:1px solid var(--line)}
+.toggle:first-child{border-top:0}
+.sw{width:40px;height:23px;border-radius:12px;background:var(--surface-3);border:1px solid var(--line-2);position:relative;flex:none;cursor:pointer}
+.sw::after{content:"";position:absolute;top:2px;left:2px;width:17px;height:17px;border-radius:50%;background:var(--surface);transition:left .15s}
+.sw[aria-pressed="true"]{background:var(--map-route);border-color:var(--map-route)}
+.sw[aria-pressed="true"]::after{left:19px;background:#fff}
+.datebtns{display:flex;gap:7px}
+.datebtns button{flex:1;border:1px solid var(--line-2);background:var(--surface);color:var(--ink);border-radius:var(--r-sm);padding:9px 4px;font-size:12.5px;font-weight:600}
+.datebtns button[aria-pressed="true"]{border-color:var(--map-route);background:var(--surface-3)}
+.selectable{font-family:var(--mono);font-size:12.5px;color:var(--ink);-webkit-user-select:all;user-select:all}
+.avatar.sm{width:38px;height:38px;font-size:14px}
+.tcwrap{padding:13px 14px;border-top:1px solid var(--line);display:flex;flex-direction:column;gap:11px}
+.tc-top{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.tc-driver{display:flex;align-items:center;gap:10px}
+.tc-driver .nm{font-weight:600;font-size:14px}.tc-driver .sub{font-size:11.5px;color:var(--muted);margin-top:1px}
+.tc-eta{text-align:right}.tc-eta .v{font-family:var(--mono);font-weight:600;font-size:16px}.tc-eta .l{font-size:10.5px;color:var(--faint)}
+.tc-bar{height:7px;background:var(--surface-3);border:1px solid var(--line);border-radius:4px;overflow:hidden}
+.tc-bar>span{display:block;height:100%;background:var(--map-route)}
+.tc-meta{display:flex;gap:7px;align-items:center;font-size:12.5px;color:var(--muted)}.tc-meta .ic{color:var(--map-route);width:14px;height:14px;flex:none}
+.trip-eta{display:flex;justify-content:space-between;align-items:center;background:var(--surface-2);border:1px solid var(--line);border-radius:var(--r);padding:12px 14px}
+.trip-eta .big{font-family:var(--mono);font-size:24px;font-weight:600}.trip-eta>.ic{color:var(--map-route);width:26px;height:26px}
+
+/* auth / onboarding */
+.authtop{background:var(--brand);color:#fff;padding:24px 20px 20px;position:relative;overflow:hidden}
+.authtop .logo2{display:flex;align-items:center;gap:10px;font-weight:700;font-size:17px;position:relative;z-index:1}
+.authtop .logo2 .mk{width:30px;height:30px;border-radius:7px;background:#fff;display:grid;place-items:center;flex:none}
+.authtop .tag{font-size:12.5px;opacity:.9;margin-top:9px;position:relative;z-index:1}
+.authtop .motif{position:absolute;right:-18px;bottom:-30px;opacity:.16;color:#fff}
+.authbody{padding:18px 18px 22px;display:flex;flex-direction:column;gap:13px}
+.authbody h2{font-size:19px;letter-spacing:-.01em}
+.authbody .lead{font-size:13px;color:var(--muted);margin-top:-7px}
+.authlink{text-align:center;font-size:13px;color:var(--muted)}
+.authlink b{color:var(--brand);font-weight:600;cursor:pointer}
+.authhint{text-align:center;font-size:11.5px;color:var(--faint);background:var(--surface-2);border:1px dashed var(--line-2);border-radius:var(--r);padding:8px 10px}
+.stepper{display:flex;gap:6px}
+.stepper .s{flex:1;height:4px;border-radius:2px;background:var(--surface-3)}
+.stepper .s.on{background:var(--brand)}
+.review{border:1px solid var(--line);border-radius:var(--r);background:var(--surface-2);padding:2px 12px}
+.ownerauth{display:grid;grid-template-columns:1.05fr 1fr;border:1px solid var(--line);border-radius:var(--r);overflow:hidden;background:var(--surface);min-height:434px}
+.ownerauth .brandpanel{background:var(--brand);color:#fff;padding:34px 30px;display:flex;flex-direction:column;justify-content:space-between;gap:24px;position:relative;overflow:hidden}
+.ownerauth .brandpanel .logo2{display:flex;align-items:center;gap:11px;font-weight:700;font-size:19px;position:relative;z-index:1}
+.ownerauth .brandpanel .mk{width:34px;height:34px;border-radius:8px;background:#fff;display:grid;place-items:center}
+.ownerauth .brandpanel .pitch{font-size:23px;font-weight:600;line-height:1.3;position:relative;z-index:1;letter-spacing:-.015em}
+.ownerauth .brandpanel ul{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:10px;position:relative;z-index:1}
+.ownerauth .brandpanel li{display:flex;align-items:center;gap:10px;font-size:13px;opacity:.95}
+.ownerauth .brandpanel li .ic{width:16px;height:16px}
+.ownerauth .brandpanel .motif{position:absolute;right:-34px;bottom:-44px;opacity:.14;color:#fff}
+.ownerauth .formpanel{padding:34px 30px;display:flex;flex-direction:column;justify-content:center;gap:13px}
+.ownerauth .formpanel h2{font-size:20px;letter-spacing:-.01em}
+@media(max-width:680px){.ownerauth{grid-template-columns:1fr}.ownerauth .brandpanel{padding:24px;gap:18px}}
+.rsum{background:var(--surface-2);border:1px solid var(--line);border-radius:var(--r);padding:13px 14px;text-align:center;margin-bottom:14px}
+.rsum .big{font-family:var(--mono);font-size:24px;font-weight:600}
+.rsum .sub{font-size:12px;color:var(--muted);margin-top:3px}
+.stars{display:flex;gap:6px;justify-content:center;margin:8px 0 14px}
+.stars .star{border:0;background:transparent;padding:2px;cursor:pointer;line-height:0}
+.stars .star svg{width:30px;height:30px;fill:var(--line-2)}
+.stars .star.on svg{fill:#f4a51f}
+.rowbtns{display:flex;gap:6px}
+</style>
+
+<div class="bar">
+  <div class="bar-in">
+    <div class="brand">
+      <svg class="logo" viewBox="0 0 48 48" aria-hidden="true">
+        <rect width="48" height="48" rx="7" fill="#1b1e22"/>
+        <path d="M14 11h5v26h-5z" fill="#fff"/>
+        <path d="M19 24l11-13h6L25 24l11 13h-6z" fill="#fff"/>
+      </svg>
+      <span>Kris Fuel Ops</span>
+      <span class="v">v0.4</span>
+    </div>
+    <div class="spacer"></div>
+    <div class="tabs" role="tablist" aria-label="View">
+      <button data-act="role" data-role="owner" aria-pressed="true">Owner</button>
+      <button data-act="role" data-role="driver" aria-pressed="false">Driver</button>
+      <button data-act="role" data-role="customer" aria-pressed="false">Customer</button>
+    </div>
+    <button class="iconbtn notif-btn" data-act="notif" title="Activity" aria-label="Activity">
+      <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9a6 6 0 0 1 12 0c0 5 2 6 2 6H4s2-1 2-6z"/><path d="M10 20a2 2 0 0 0 4 0"/></svg>
+      <span class="badge" id="nbadge" hidden></span>
+    </button>
+    <button class="iconbtn" data-act="theme" title="Toggle theme" aria-label="Toggle theme">
+      <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 3a9 9 0 1 0 9 9 7 7 0 0 1-9-9z"/></svg>
+    </button>
+  </div>
+</div>
+
+<main>
+  <div class="note" id="intro">
+    <span>Demo build. Each role opens its own login — tap <b>Sign in</b> (pre-filled) to enter, or <b>Open an account</b> to see sign-up. Switch roles with the tabs above. Sample data, GYD.</span>
+    <button data-act="dismiss-intro">Hide</button>
+  </div>
+  <div id="view"></div>
+</main>
+
+<div id="notif-root"></div>
+<div id="sheet-root"></div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+/* ---------- icons ---------- */
+var ICONS={
+  grid:'<path d="M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z"/>',
+  list:'<path d="M8 6h12M8 12h12M8 18h12"/><circle cx="4" cy="6" r="1"/><circle cx="4" cy="12" r="1"/><circle cx="4" cy="18" r="1"/>',
+  send:'<path d="M4 11l16-7-7 16-2-6z"/>',
+  drop:'<path d="M12 3s6 6.5 6 10.5a6 6 0 0 1-12 0C6 9.5 12 3 12 3z"/>',
+  truck:'<path d="M3 6h11v9H3zM14 9h4l3 3v3h-7"/><circle cx="7" cy="18" r="1.6"/><circle cx="17.5" cy="18" r="1.6"/>',
+  pin:'<path d="M12 21s-6-5.3-6-10a6 6 0 0 1 12 0c0 4.7-6 10-6 10z"/><circle cx="12" cy="11" r="2"/>',
+  camera:'<path d="M4 8h3l1.5-2h7L17 8h3v11H4z"/><circle cx="12" cy="13" r="3.2"/>',
+  chat:'<path d="M4 5h16v11H9l-4 3z"/>',
+  check:'<path d="M5 12l4 4 10-10"/>',
+  nav:'<path d="M3 11l18-7-7 18-2-7z"/>',
+  alert:'<path d="M12 3l9 16H3z"/><path d="M12 10v4"/><path d="M12 17v.01"/>',
+  cash:'<rect x="3" y="6" width="18" height="12" rx="1"/><circle cx="12" cy="12" r="2.5"/>',
+  users:'<circle cx="9" cy="8" r="3"/><path d="M3.5 20a5.5 5.5 0 0 1 11 0"/><path d="M16 5.5a3 3 0 0 1 0 5"/><path d="M18.5 20a5.5 5.5 0 0 0-3-4.9"/>',
+  chart:'<path d="M4 4v16h16"/><rect x="7" y="12" width="3" height="5"/><rect x="12" y="8" width="3" height="9"/><rect x="17" y="5" width="3" height="12"/>',
+  signal:'<path d="M4 20v-3M9 20v-7M14 20v-11M19 20V5"/>',
+  battery:'<rect x="3" y="8" width="15" height="8" rx="1"/><path d="M21 11v2"/>',
+  clock:'<circle cx="12" cy="12" r="8"/><path d="M12 8v4l3 2"/>',
+  user:'<circle cx="12" cy="8" r="3.2"/><path d="M5 20a7 7 0 0 1 14 0"/>',
+  tag:'<path d="M3 11l8-8 10 10-8 8z"/><circle cx="8.5" cy="8.5" r="1.3"/>',
+  plus:'<path d="M12 5v14M5 12h14"/>',
+  phone:'<path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L16 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z"/>',
+  calendar:'<rect x="4" y="5" width="16" height="16" rx="2"/><path d="M4 10h16M9 3v4M15 3v4"/>',
+  repeat:'<path d="M4 9l3-3 3 3"/><path d="M7 6h8a4 4 0 0 1 4 4"/><path d="M20 15l-3 3-3-3"/><path d="M17 18H9a4 4 0 0 1-4-4"/>',
+  map:'<path d="M9 4L3 7v13l6-3 6 3 6-3V4l-6 3z"/><path d="M9 4v13M15 7v13"/>',
+  file:'<path d="M6 3h8l4 4v14H6z"/><path d="M14 3v4h4"/>',
+  star:'<path d="M12 3l2.6 5.6 6.1.7-4.5 4.2 1.2 6L12 16.9 6.6 19.5l1.2-6L3.3 9.3l6.1-.7z"/>',
+  tanker:'<rect x="2.5" y="8" width="12" height="7" rx="3"/><path d="M14.5 15v-4.5h2.5L20.5 14v1z"/><circle cx="6.5" cy="17" r="1.7"/><circle cx="17.5" cy="17" r="1.7"/><path d="M6 8V6.5M10 8V6.5"/>'
+};
+function ic(n,cls){return '<svg class="ic'+(cls?' '+cls:'')+'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">'+(ICONS[n]||'')+'</svg>';}
+
+/* ---------- data store ---------- */
+var PRICE={ulsd:322,lsd:308,gas:341};
+var PROD={ulsd:"Ultra Low Sulphur Diesel",lsd:"Low Sulphur Diesel",gas:"Gasoline"};
+var PSHORT={ulsd:"ULSD",lsd:"LSD",gas:"Gasoline"};
+var DRIVERS=[
+  {id:"rohan",name:"Rohan Persaud",vehicle:"Truck GPP 4417"},
+  {id:"devi", name:"Devi Singh",   vehicle:"River tanker Kris I"},
+  {id:"mark", name:"Mark Austin",  vehicle:"Truck GRR 2290"}
+];
+var CUSTOMERS=[
+  {name:"Demerara Aggregates Inc.",region:"Region 4",segment:"Aggregates / construction",terms:"14-day",limit:8000000},
+  {name:"Essequibo Fishing Co-op",region:"Region 3",segment:"Fisheries (marine)",terms:"7-day",limit:5000000},
+  {name:"BK Construction",region:"Region 4",segment:"Construction",terms:"30-day",limit:6000000},
+  {name:"Correia Mining Group",region:"Region 8",segment:"Mining",terms:"30-day",limit:15000000},
+  {name:"Pomeroon Farms",region:"Region 2",segment:"Agriculture",terms:"Cash on delivery",limit:1500000}
+];
+var CUSTOMER_ME="Demerara Aggregates Inc.";
+var DRIVER_ME="rohan";
+
+var orders=[
+  {id:"KI-1043",customer:"Pomeroon Farms",prod:"lsd",litres:2000,status:"pending",driver:null,addr:"Charity, Pomeroon (Region 2)",today:true,paid:false,eta:null,proof:null},
+  {id:"KI-1042",customer:"Demerara Aggregates Inc.",prod:"ulsd",litres:5000,status:"in_transit",driver:"rohan",addr:"Houston, Georgetown (Region 4)",today:true,paid:false,eta:"11:40",etaMin:12,progress:62,distKm:2.1,proof:null},
+  {id:"KI-1041",customer:"Essequibo Fishing Co-op",prod:"lsd",litres:8000,status:"scheduled",driver:"devi",addr:"Parika Stelling (Region 3)",today:true,paid:false,eta:"14:30",proof:null},
+  {id:"KI-1040",customer:"BK Construction",prod:"gas",litres:3000,status:"delivered",driver:"mark",addr:"Providence, EBD (Region 4)",today:true,paid:false,deliveredLitres:3000,proof:{time:"08:52",sig:true,photo:true}},
+  {id:"KI-1039",customer:"Correia Mining Group",prod:"ulsd",litres:12000,status:"scheduled",driver:"rohan",addr:"Mahdia (Region 8)",today:false,paid:false,eta:"Tomorrow 07:00",proof:null},
+  {id:"KI-1038",customer:"Demerara Aggregates Inc.",prod:"ulsd",litres:4000,status:"delivered",driver:"rohan",addr:"Houston, Georgetown (Region 4)",today:false,paid:true,deliveredLitres:3980,proof:{time:"Yesterday 15:10",sig:true,photo:true}}
+];
+var stock={ulsd:62,lsd:34,gas:71};
+var CAP={ulsd:50000,lsd:40000,gas:30000};
+var activity=[
+  {t:"08:52",text:"KI-1040 delivered to BK Construction — proof captured"},
+  {t:"08:30",text:"KI-1042 dispatched to Rohan Persaud"},
+  {t:"07:15",text:"KI-1041 scheduled — Essequibo Co-op (river delivery)"}
+];
+var seq=1044;
+var driverMsgs=[
+  {who:"them",t:"07:02",text:"Morning Rohan — 3 stops today. Aggregates (Houston) first, it’s priority."},
+  {who:"me",t:"07:05",text:"Copy. Loading ULSD now, rolling by 07:30."},
+  {who:"them",t:"07:41",text:"Correia (Mahdia) moved to tomorrow 07:00. Focus the two coastal drops."}
+];
+var CUST_SITES=[
+  {name:"Houston yard, Georgetown",region:"Region 4",primary:true},
+  {name:"Providence site B, EBD",region:"Region 4"},
+  {name:"Eccles batching plant",region:"Region 4"}
+];
+var JOB_INSTR={
+  "Demerara Aggregates Inc.":"Enter via Houston gate 2, ask for the site foreman.",
+  "Essequibo Fishing Co-op":"River delivery — confirm tide window before offloading.",
+  "Pomeroon Farms":"Call on arrival; farm access road after the bridge.",
+  "Correia Mining Group":"Interior route — 4x4 escort past Mahdia junction.",
+  "BK Construction":"Deliver to rear tank; security sign-in required."
+};
+
+function fmt(n){return Math.round(n).toLocaleString("en-US");}
+function gyd(n){return "GYD "+fmt(n);}
+function value(o){return o.litres*PRICE[o.prod];}
+function statusLabel(s){return {pending:"Needs dispatch",scheduled:"Scheduled",in_transit:"In transit",delivered:"Delivered"}[s];}
+function stChip(s){return '<span class="st" data-s="'+s+'"><span class="d"></span>'+statusLabel(s)+'</span>';}
+function driverName(id){var d=DRIVERS.find(function(x){return x.id===id;});return d?d.name:"—";}
+function esc(s){return String(s).replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];});}
+function custBalance(name){return orders.filter(function(o){return o.customer===name&&o.status==="delivered"&&!o.paid;}).reduce(function(a,o){return a+value(o);},0);}
+function initials(n){return n.split(" ").filter(Boolean).slice(0,2).map(function(w){return w[0];}).join("").toUpperCase();}
+
+var state={role:"owner",ownerTab:"overview",driverTab:"jobs",custTab:"order",preTripDone:false,unread:0,notifOpen:false,
+  auth:{owner:false,driver:false,customer:false},authMode:{owner:"login",driver:"login",customer:"login"},su:{customer:1,driver:1}};
+try{var th=localStorage.getItem("kfo-theme");if(th)document.documentElement.setAttribute("data-theme",th);}catch(e){}
+
+/* ---------- notifications ---------- */
+function logEvent(text){activity.unshift({t:"Just now",text:text});state.unread++;updateBell();if(state.notifOpen)renderNotif();}
+function updateBell(){var b=document.getElementById("nbadge");if(!b)return;if(state.unread>0){b.textContent=state.unread;b.hidden=false;}else{b.hidden=true;}}
+function renderNotif(){document.getElementById("notif-root").innerHTML='<div class="notif"><div class="nh"><span>Activity</span><span>'+activity.length+' events</span></div><div class="nlist">'+activity.map(function(a){return '<div class="ni">'+ic("check")+'<div><div>'+esc(a.text)+'</div><div class="tm">'+esc(a.t)+'</div></div></div>';}).join("")+'</div></div>';}
+function toggleNotif(){state.notifOpen=!state.notifOpen;if(state.notifOpen){state.unread=0;updateBell();renderNotif();}else closeNotif();}
+function closeNotif(){state.notifOpen=false;document.getElementById("notif-root").innerHTML="";}
+
+/* ---------- AUTH / onboarding ---------- */
+function brandMarkK(){return '<svg width="20" height="20" viewBox="0 0 48 48" aria-hidden="true"><path d="M14 11h5v26h-5z" fill="#0b5fd0"/><path d="M19 24l11-13h6L25 24l11 13h-6z" fill="#0b5fd0"/></svg>';}
+function authPhone(body){
+  return '<div class="stage"><div class="phone"><div class="sbar"><span>9:41</span><span class="r">'+ic("signal")+ic("battery")+'</span></div>'+
+    '<div class="authtop"><div class="logo2"><span class="mk">'+brandMarkK()+'</span>Kris Industries</div><div class="tag">Fuelling your every growth</div>'+
+    '<svg class="motif" width="150" height="150" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round">'+ICONS.truck+'</svg></div>'+
+    '<div class="authbody">'+body+'</div></div></div>';
+}
+function customerAuth(){
+  if(state.authMode.customer==="signup")return authPhone(customerSignup());
+  return authPhone('<h2>Welcome back</h2><div class="lead">Order fuel and track deliveries for your business.</div>'+
+    '<div class="field"><label>Business email or phone</label><input type="text" value="orders@demerara-agg.gy"></div>'+
+    '<div class="field"><label>Password</label><input type="password" value="demo1234"></div>'+
+    '<button class="btn block" data-act="auth-login" data-role="customer">Sign in</button>'+
+    '<div class="authlink">New to Kris Industries? <b data-act="auth-to-signup" data-role="customer">Open an account</b></div>'+
+    '<div class="authhint">Demo — tap Sign in to enter the customer app.</div>');
+}
+function customerSignup(){
+  var step=state.su.customer;
+  var dots='<div class="stepper"><span class="s'+(step>=1?' on':'')+'"></span><span class="s'+(step>=2?' on':'')+'"></span><span class="s'+(step>=3?' on':'')+'"></span></div>';
+  var content;
+  if(step===1)content='<h2>Open an account</h2><div class="lead">Step 1 of 3 · Your business</div>'+
+    '<div class="field"><label>Company name</label><input type="text" placeholder="e.g. Demerara Aggregates Inc."></div>'+
+    '<div class="field"><label>Business type</label><select><option>Construction</option><option>Aggregates supplier</option><option>Fisheries</option><option>Mining / logging</option><option>Agriculture</option><option>Transport / fleet</option></select></div>'+
+    '<div class="field"><label>Region</label><select><option>Region 4 — Demerara-Mahaica</option><option>Region 3 — Essequibo Islands</option><option>Region 2 — Pomeroon</option><option>Region 8 — Potaro-Siparuni</option><option>Region 10 — Upper Demerara</option></select></div>';
+  else if(step===2)content='<h2>Open an account</h2><div class="lead">Step 2 of 3 · Contact & login</div>'+
+    '<div class="field"><label>Full name</label><input type="text" placeholder="Contact person"></div>'+
+    '<div class="field"><label>Phone</label><input type="tel" placeholder="+592 …"></div>'+
+    '<div class="field"><label>Email</label><input type="email" placeholder="you@company.gy"></div>'+
+    '<div class="field"><label>Create password</label><input type="password" placeholder="••••••••"></div>';
+  else content='<h2>Almost done</h2><div class="lead">Step 3 of 3 · Delivery & review</div>'+
+    '<div class="field"><label>Primary delivery address</label><input type="text" placeholder="Yard / site address"></div>'+
+    '<div class="review"><div class="kv"><span class="k">Account type</span><span class="vv">Business (B2B)</span></div><div class="kv"><span class="k">Payment</span><span class="vv">On account · credit on approval</span></div><div class="kv"><span class="k">Products</span><span class="vv">ULSD · LSD · Gasoline</span></div></div>'+
+    '<div class="authhint">Your account is reviewed by Kris Industries before credit terms are set.</div>';
+  var navb='<div style="display:flex;gap:9px">'+(step>1?'<button class="btn ghost" data-act="su-back" data-role="customer" style="flex:1">Back</button>':'<button class="btn ghost" data-act="auth-to-login" data-role="customer" style="flex:1">Cancel</button>')+'<button class="btn" data-act="su-next" data-role="customer" style="flex:2">'+(step>=3?'Create account':'Continue')+'</button></div>';
+  return dots+content+navb;
+}
+function driverAuth(){
+  if(state.authMode.driver==="signup")return authPhone(driverSignup());
+  return authPhone('<h2>Driver sign in</h2><div class="lead">See your jobs, routes and proof of delivery.</div>'+
+    '<div class="field"><label>Phone or driver ID</label><input type="text" value="rohan.p"></div>'+
+    '<div class="field"><label>Password</label><input type="password" value="demo1234"></div>'+
+    '<button class="btn block" data-act="auth-login" data-role="driver">Sign in</button>'+
+    '<div class="authlink">New driver? <b data-act="auth-to-signup" data-role="driver">Create an account</b></div>'+
+    '<div class="authhint">Demo — tap Sign in to enter the driver app.</div>');
+}
+function driverSignup(){
+  var step=state.su.driver;
+  var dots='<div class="stepper"><span class="s'+(step>=1?' on':'')+'"></span><span class="s'+(step>=2?' on':'')+'"></span></div>';
+  var content;
+  if(step===1)content='<h2>Create your account</h2><div class="lead">Step 1 of 2 · About you</div>'+
+    '<div class="field"><label>Full name</label><input type="text" placeholder="Your name"></div>'+
+    '<div class="field"><label>Phone</label><input type="tel" placeholder="+592 …"></div>'+
+    '<div class="field"><label>Email</label><input type="email" placeholder="you@email.com"></div>'+
+    '<div class="field"><label>Create password</label><input type="password" placeholder="••••••••"></div>';
+  else content='<h2>Create your account</h2><div class="lead">Step 2 of 2 · Licence & vehicle</div>'+
+    '<div class="field"><label>Driver licence no.</label><input type="text" placeholder="PDL number"></div>'+
+    '<div class="field"><label>Licence class</label><select><option>Class C — goods vehicle</option><option>Class D — heavy</option><option>Hazmat endorsement</option></select></div>'+
+    '<div class="field"><label>Vehicle</label><select><option>Tanker truck</option><option>River tanker / boat</option><option>Flat-bed</option></select></div>'+
+    '<div class="field"><label>Vehicle reg.</label><input type="text" placeholder="e.g. GPP 4417"></div>'+
+    '<div class="authhint">New drivers are verified by Kris Industries dispatch before going live.</div>';
+  var navb='<div style="display:flex;gap:9px">'+(step>1?'<button class="btn ghost" data-act="su-back" data-role="driver" style="flex:1">Back</button>':'<button class="btn ghost" data-act="auth-to-login" data-role="driver" style="flex:1">Cancel</button>')+'<button class="btn" data-act="su-next" data-role="driver" style="flex:2">'+(step>=2?'Create account':'Continue')+'</button></div>';
+  return dots+content+navb;
+}
+function ownerAuth(){
+  return '<div class="ownerauth"><div class="brandpanel"><div class="logo2"><span class="mk">'+brandMarkK()+'</span>Kris Industries</div>'+
+    '<div class="pitch">Run your fuel distribution from one control room.</div>'+
+    '<ul><li>'+ic("truck")+'Live dispatch & delivery tracking</li><li>'+ic("cash")+'Invoicing, credit & payments</li><li>'+ic("chart")+'Volume & revenue reporting</li><li>'+ic("drop")+'Tank & stock monitoring</li></ul>'+
+    '<svg class="motif" width="210" height="210" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">'+ICONS.truck+'</svg></div>'+
+    '<div class="formpanel"><h2>Sign in to the dashboard</h2><div class="muted sm" style="margin-top:-6px">Operations control for Kris Industries</div>'+
+    '<div class="field"><label>Work email</label><input type="email" value="owner@krisindustries.gy"></div>'+
+    '<div class="field"><label>Password</label><input type="password" value="demo1234"></div>'+
+    '<button class="btn block" data-act="auth-login" data-role="owner">Sign in</button>'+
+    '<div class="authhint">Admin access is provisioned by Kris Industries at setup — there’s no public sign-up for the owner dashboard.</div></div></div>';
+}
+
+/* ---------- OWNER ---------- */
+function ownerCounts(){return {
+  pending:orders.filter(function(o){return o.status==="pending";}).length,
+  transit:orders.filter(function(o){return o.status==="in_transit";}).length,
+  unpaid:orders.filter(function(o){return o.status==="delivered"&&!o.paid;}).length
+};}
+function renderOwner(){
+  if(!state.auth.owner){document.getElementById("view").innerHTML='<div style="max-width:760px;margin:12px auto 0">'+ownerAuth()+'</div>';return;}
+  var c=ownerCounts();
+  var groups=[
+    ["Operations",[["overview","Overview","grid",0],["orders","Orders","list",0],["dispatch","Dispatch","truck",c.pending]]],
+    ["Business",[["billing","Billing","cash",c.unpaid],["customers","Customers","users",0],["reports","Reports","chart",0]]],
+    ["Inventory",[["stock","Stock & tanks","drop",0]]],
+    ["Account",[["settings","Settings","user",0]]]
+  ];
+  var navHtml=groups.map(function(g){return '<div class="lbl">'+g[0]+'</div>'+g[1].map(function(n){
+    return '<button class="nav" data-act="otab" data-tab="'+n[0]+'" aria-current="'+(state.ownerTab===n[0])+'">'+ic(n[2])+'<span>'+n[1]+'</span>'+(n[3]?'<span class="count">'+n[3]+'</span>':'')+'</button>';
+  }).join("");}).join("");
+  document.getElementById("view").innerHTML='<div class="shell"><aside class="side">'+navHtml+'</aside><section class="content">'+ownerPanel()+'</section></div>';
+  initMap();
+}
+function ownerPanel(){
+  switch(state.ownerTab){
+    case "orders":return panelOrders();
+    case "dispatch":return panelDispatch();
+    case "billing":return panelBilling();
+    case "customers":return panelCustomers();
+    case "reports":return panelReports();
+    case "stock":return panelStock();
+    case "settings":return panelSettings();
+    default:return panelOverview();
+  }
+}
+function panelOverview(){
+  var deliveredToday=orders.filter(function(o){return o.status==="delivered"&&o.today;});
+  var litresToday=deliveredToday.reduce(function(a,o){return a+(o.deliveredLitres||0);},0);
+  var outstanding=orders.filter(function(o){return o.status==="delivered"&&!o.paid;}).reduce(function(a,o){return a+value(o);},0);
+  var c=ownerCounts();
+  var today=orders.filter(function(o){return o.today;}).length;
+  var stats=
+    '<div class="stat"><div class="l">Orders today</div><div class="v">'+today+'</div><div class="d">'+c.pending+' awaiting dispatch</div></div>'+
+    '<div class="stat"><div class="l">In transit</div><div class="v">'+c.transit+'</div><div class="d">road & river</div></div>'+
+    '<div class="stat"><div class="l">Litres delivered</div><div class="v">'+fmt(litresToday)+' <small>L</small></div><div class="d">today, with proof</div></div>'+
+    '<div class="stat'+(outstanding>3000000?' warn':'')+'"><div class="l">Outstanding</div><div class="v">'+fmt(outstanding)+' <small>GYD</small></div><div class="d">'+c.unpaid+' unpaid invoices</div></div>';
+  var active=orders.find(function(o){return o.status==="in_transit";});
+  var tripFoot=active?'<div class="tcwrap">'+tripCard(active)+'</div>':'<div class="trip-foot">'+ic("truck")+'<span>No active deliveries</span></div>';
+  var att=[];
+  if(stock.lsd<40)att.push('<div class="r crit">'+ic("alert")+'<span>Low Sulphur Diesel tank at '+stock.lsd+'% — reorder</span><span class="tag">Stock</span></div>');
+  if(c.pending)att.push('<div class="r warn">'+ic("truck")+'<span>'+c.pending+' order(s) need a driver assigned</span><span class="tag">Dispatch</span></div>');
+  if(c.unpaid)att.push('<div class="r">'+ic("cash")+'<span>'+c.unpaid+' delivered order(s) unpaid — '+gyd(outstanding)+'</span><span class="tag">Billing</span></div>');
+  return '<div class="panel-h"><h2>Overview</h2><span class="meta">Mon 26 Oct · Georgetown depot</span></div>'+
+    '<div class="block"><div class="stats">'+stats+'</div></div>'+
+    '<div class="block" style="overflow:hidden"><div class="bh"><h3>'+ic("pin")+'Live delivery</h3><span class="st" data-s="in_transit"><span class="d"></span>Georgetown corridor</span></div>'+routeMap()+tripFoot+'</div>'+
+    '<div class="block"><div class="bh"><h3>'+ic("alert")+'Needs attention</h3></div><div class="att">'+(att.join("")||'<div class="empty">Nothing needs attention.</div>')+'</div></div>';
+}
+function routeMap(){
+  var trip=orders.find(function(x){return x.status==="in_transit";});var tid=trip?trip.id:"KI-1042";
+  return '<div class="mapwrap"><svg class="routemap" viewBox="0 0 800 320" role="img" aria-label="Delivery route across Georgetown, East Bank Demerara"><g id="mv">'+
+    /* water: Atlantic coast + Demerara River */
+    '<path class="water" d="M0,0 L800,0 L800,38 Q600,60 400,46 Q200,33 0,60 Z"/>'+
+    '<path class="water" d="M0,60 Q82,52 122,80 Q150,150 150,320 L0,320 Z"/>'+
+    /* parkland / fields */
+    '<ellipse class="green" cx="662" cy="248" rx="112" ry="58"/>'+
+    '<ellipse class="green" cx="432" cy="288" rx="82" ry="38"/>'+
+    /* city blocks */
+    '<g class="bld"><rect x="430" y="150" width="30" height="22"/><rect x="466" y="150" width="34" height="22"/><rect x="506" y="150" width="34" height="22"/><rect x="546" y="150" width="30" height="22"/><rect x="600" y="156" width="34" height="24"/>'+
+    '<rect x="430" y="178" width="30" height="22"/><rect x="466" y="178" width="34" height="22"/><rect x="506" y="178" width="34" height="22"/><rect x="546" y="178" width="30" height="22"/><rect x="600" y="188" width="34" height="24"/></g>'+
+    /* tertiary streets */
+    '<path class="rd2" stroke-width="1.5" d="M250,118 L775,104"/><path class="rd2" stroke-width="1.5" d="M345,100 L372,295"/><path class="rd2" stroke-width="1.5" d="M455,92 L488,292"/><path class="rd2" stroke-width="1.5" d="M600,96 L636,300"/><path class="rd2" stroke-width="1.5" d="M360,80 L384,290"/><path class="rd2" stroke-width="1.5" d="M250,172 L772,162"/><path class="rd2" stroke-width="1.5" d="M258,248 L712,238"/>'+
+    /* secondary grid */
+    '<path class="rd2" stroke-width="3" d="M300,74 L332,298"/><path class="rd2" stroke-width="3" d="M402,68 L430,298"/><path class="rd2" stroke-width="3" d="M505,66 L548,296"/>'+
+    '<path class="rd2" stroke-width="3" d="M196,142 L762,132"/><path class="rd2" stroke-width="3" d="M214,212 L742,202"/><path class="rd2" stroke-width="3" d="M236,272 L720,262"/><path class="rd2" stroke-width="3" d="M520,66 L700,300"/>'+
+    /* main roads: coastal + East Bank */
+    '<path class="rd" stroke-width="7" d="M160,70 Q420,58 792,56"/><path class="rd" stroke-width="7" d="M188,80 Q205,170 246,316"/>'+
+    /* route travelled + remaining */
+    '<path class="rte" stroke-width="4" d="M560,110 Q430,106 322,120 Q262,130 232,162"/>'+
+    '<path class="rte" stroke-width="4" stroke-dasharray="1 8" stroke-opacity="0.6" d="M232,162 Q222,202 228,230 Q231,246 235,254"/>'+
+    /* labels */
+    '<text class="lbl-w" x="430" y="27" text-anchor="middle">ATLANTIC OCEAN</text>'+
+    '<text class="lbl-w" x="58" y="210" text-anchor="middle" transform="rotate(-82 58 210)">DEMERARA RIVER</text>'+
+    '<text class="lbl" x="476" y="172">Georgetown</text>'+
+    '<text class="lbl-sm" x="300" y="250">Houston</text><text class="lbl-sm" x="438" y="302">Agricola</text><text class="lbl-sm" x="640" y="236">Ruimveldt</text>'+
+    /* depot marker */
+    '<g transform="translate(560,110)"><rect class="mk-r" x="-8" y="-8" width="16" height="16" rx="4" stroke="#fff" stroke-width="2"/></g><text class="lbl" x="560" y="97" text-anchor="middle">Depot</text>'+
+    /* destination pin */
+    '<g transform="translate(235,255)"><path class="mk-d" d="M0,0 C-9,-14 -9,-21 0,-25 C9,-21 9,-14 0,0 Z" stroke="#fff" stroke-width="1.5"/><circle cx="0" cy="-16" r="3" fill="#fff"/></g><text class="lbl" x="235" y="281" text-anchor="middle">Aggregates</text>'+
+    /* vehicle marker — live tanker puck (tap for trip details) */
+    '<g transform="translate(300,120)" data-act="open-trip" data-id="'+tid+'" style="cursor:pointer"><circle r="26" fill="transparent"/><circle class="veh-pulse" r="15"/><circle class="veh-puck" r="15"/><g transform="translate(-9,-9.5) scale(0.78)" class="veh-ic">'+ICONS.tanker+'</g></g>'+
+  '</g></svg>'+
+  '<div class="mapbadge">'+ic("tanker")+'Live · '+tid+'</div>'+
+  '<div class="mapctrl"><button type="button" data-act="map-zoom" data-dir="in" aria-label="Zoom in">+</button><button type="button" data-act="map-zoom" data-dir="out" aria-label="Zoom out">−</button><button type="button" data-act="map-zoom" data-dir="reset" aria-label="Recenter">'+ic("pin")+'</button></div>'+
+  '<div class="mapscale"><i></i>2 km</div>'+
+  '<div class="maphint">Scroll or pinch to zoom · drag to pan</div></div>';
+}
+function tripCard(o){
+  var d=DRIVERS.find(function(x){return x.id===o.driver;})||DRIVERS[0];
+  var etaMin=o.etaMin||15,progress=o.progress||40,distKm=o.distKm||3.0;
+  return '<div class="tc-top"><div class="tc-driver"><div class="avatar sm">'+initials(d.name)+'</div><div><div class="nm">'+esc(d.name)+'</div><div class="sub">'+esc(d.vehicle)+'</div></div></div>'+
+    '<div class="tc-eta"><div class="v">~'+etaMin+' min</div><div class="l">ETA '+esc(o.eta||"—")+'</div></div></div>'+
+    '<div class="tc-bar"><span style="width:'+progress+'%"></span></div>'+
+    '<div class="tc-meta">'+ic("drop")+'<span>'+fmt(o.litres)+' L '+PSHORT[o.prod]+' → '+esc(o.customer)+' · '+distKm+' km away</span></div>'+
+    '<div class="contact"><button class="cbtn" data-act="contact" data-kind="call" data-name="'+esc(d.name)+'">'+ic("phone")+'Call driver</button><button class="cbtn" data-act="open-trip" data-id="'+o.id+'">'+ic("pin")+'Details</button></div>';
+}
+function panelOrders(){
+  var rows=orders.slice().sort(function(a,b){var r={pending:0,in_transit:1,scheduled:2,delivered:3};return r[a.status]-r[b.status];}).map(function(o){
+    return '<tr><td><span class="oid">'+o.id+'</span></td><td><span class="cust">'+esc(o.customer)+'</span></td><td>'+PSHORT[o.prod]+'</td><td class="num">'+fmt(o.litres)+'</td><td class="num">'+fmt(value(o))+'</td><td>'+esc(driverName(o.driver))+'</td><td>'+stChip(o.status)+'</td></tr>';
+  }).join("");
+  return '<div class="panel-h"><h2>Orders</h2><button class="btn sm" data-act="open-new-order">'+ic("plus")+'New order</button></div><div class="block"><div class="bd flush"><div class="tw"><table><thead><tr><th>Order</th><th>Customer</th><th>Product</th><th class="num">Litres</th><th class="num">Value (GYD)</th><th>Driver</th><th>Status</th></tr></thead><tbody>'+rows+'</tbody></table></div></div></div>';
+}
+function panelDispatch(){
+  var pending=orders.filter(function(o){return o.status==="pending";});
+  var scheduled=orders.filter(function(o){return o.status==="scheduled"||o.status==="in_transit";});
+  var items=pending.length?pending.map(function(o){
+    var opts=DRIVERS.map(function(d){return '<option value="'+d.id+'">'+esc(d.name)+" — "+esc(d.vehicle)+'</option>';}).join("");
+    return '<div class="item"><div class="t"><div><div class="cust">'+esc(o.customer)+'</div><div class="muted sm" style="margin-top:2px">'+PSHORT[o.prod]+' · '+fmt(o.litres)+' L · '+esc(o.addr)+'</div></div>'+stChip(o.status)+'</div><div class="row"><select data-assign="'+o.id+'">'+opts+'</select><button class="btn sm" data-act="dispatch" data-id="'+o.id+'">Assign</button></div></div>';
+  }).join(""):'<div class="empty">All orders dispatched. New customer orders land here.</div>';
+  var sched=scheduled.map(function(o){return '<tr><td><span class="oid">'+o.id+'</span></td><td><span class="cust">'+esc(o.customer)+'</span></td><td>'+esc(driverName(o.driver))+'</td><td>'+esc(o.eta||"—")+'</td><td>'+stChip(o.status)+'</td></tr>';}).join("");
+  return '<div class="panel-h"><h2>Dispatch</h2><button class="btn sm" data-act="open-new-order">'+ic("plus")+'New order</button></div>'+
+    '<div class="block"><div class="bh"><h3>'+ic("truck")+'Unassigned</h3></div><div class="bd flush"><div class="disp">'+items+'</div></div></div>'+
+    '<div class="block"><div class="bh"><h3>Scheduled & en route</h3></div><div class="bd flush"><div class="tw"><table><thead><tr><th>Order</th><th>Customer</th><th>Driver</th><th>ETA</th><th>Status</th></tr></thead><tbody>'+(sched||'<tr><td colspan="5" class="empty">None scheduled.</td></tr>')+'</tbody></table></div></div></div>';
+}
+function panelBilling(){
+  var inv=orders.filter(function(o){return o.status==="delivered";});
+  var invoiced=inv.reduce(function(a,o){return a+value(o);},0);
+  var paid=inv.filter(function(o){return o.paid;}).reduce(function(a,o){return a+value(o);},0);
+  var due=invoiced-paid;
+  var rows=inv.map(function(o){
+    var action=o.paid?'<span class="pill-paid">Paid</span>':'<button class="btn sm ghost" data-act="mark-paid" data-id="'+o.id+'">Mark paid</button>';
+    return '<tr><td><span class="oid">'+o.id+'</span></td><td><span class="cust">'+esc(o.customer)+'</span></td><td>'+PSHORT[o.prod]+' · '+fmt(o.deliveredLitres||o.litres)+' L</td><td class="num">'+fmt(value(o))+'</td><td>'+(o.paid?'<span class="pill-paid">Paid</span>':'<span class="pill-due">Due</span>')+'</td><td style="text-align:right">'+action+'</td></tr>';
+  }).join("");
+  return '<div class="panel-h"><h2>Billing</h2><span class="meta">'+inv.length+' invoices</span></div>'+
+    '<div class="block"><div class="stats s3">'+
+      '<div class="stat"><div class="l">Invoiced</div><div class="v">'+fmt(invoiced)+' <small>GYD</small></div></div>'+
+      '<div class="stat good"><div class="l">Collected</div><div class="v">'+fmt(paid)+' <small>GYD</small></div></div>'+
+      '<div class="stat'+(due>0?' warn':'')+'"><div class="l">Outstanding</div><div class="v">'+fmt(due)+' <small>GYD</small></div></div>'+
+    '</div></div>'+
+    '<div class="block"><div class="bd flush"><div class="tw"><table><thead><tr><th>Invoice</th><th>Customer</th><th>Line</th><th class="num">Amount</th><th>Status</th><th></th></tr></thead><tbody>'+rows+'</tbody></table></div></div></div>';
+}
+function panelCustomers(){
+  var rows=CUSTOMERS.map(function(cu){
+    var bal=custBalance(cu.name);var usedPct=Math.min(100,Math.round(bal/cu.limit*100));
+    return '<tr><td><div class="cust">'+esc(cu.name)+'</div><div class="seg">'+esc(cu.segment)+'</div></td><td>'+esc(cu.region)+'</td><td>'+esc(cu.terms)+'</td><td class="num">'+fmt(bal)+'</td>'+
+      '<td><div class="cmeter"><div class="track2"><span style="width:'+usedPct+'%"></span></div><div class="faint sm mono" style="margin-top:3px">'+usedPct+'% of '+fmt(cu.limit)+'</div></div></td></tr>';
+  }).join("");
+  return '<div class="panel-h"><h2>Customers</h2><span class="meta">'+CUSTOMERS.length+' accounts</span></div><div class="block"><div class="bd flush"><div class="tw"><table><thead><tr><th>Customer</th><th>Region</th><th>Terms</th><th class="num">Balance (GYD)</th><th>Credit used</th></tr></thead><tbody>'+rows+'</tbody></table></div></div></div>';
+}
+function panelReports(){
+  var keys=["ulsd","lsd","gas"];
+  var delivered=orders.filter(function(o){return o.status==="delivered";});
+  var vol={ulsd:0,lsd:0,gas:0},rev={ulsd:0,lsd:0,gas:0},cv={};
+  delivered.forEach(function(o){var L=o.deliveredLitres||o.litres;vol[o.prod]+=L;rev[o.prod]+=L*PRICE[o.prod];cv[o.customer]=(cv[o.customer]||0)+L;});
+  var maxVol=Math.max(1,vol.ulsd,vol.lsd,vol.gas),maxRev=Math.max(1,rev.ulsd,rev.lsd,rev.gas);
+  var totalL=vol.ulsd+vol.lsd+vol.gas,totalRev=rev.ulsd+rev.lsd+rev.gas;
+  var bar=function(label,val,unit,pct){return '<div class="b"><div class="t"><b>'+label+'</b><span class="n">'+fmt(val)+' '+unit+'</span></div><div class="track2"><span style="width:'+Math.max(4,Math.round(pct*100))+'%"></span></div></div>';};
+  var volBars=keys.map(function(k){return bar(PROD[k],vol[k],"L",vol[k]/maxVol);}).join("");
+  var revBars=keys.map(function(k){return bar(PROD[k],rev[k],"GYD",rev[k]/maxRev);}).join("");
+  var custList=Object.keys(cv).map(function(n){return [n,cv[n]];}).sort(function(a,b){return b[1]-a[1];}).slice(0,4);
+  var maxCv=Math.max.apply(null,custList.map(function(x){return x[1];}).concat([1]));
+  var custBars=custList.map(function(x){return bar(x[0],x[1],"L",x[1]/maxCv);}).join("");
+  return '<div class="panel-h"><h2>Reports</h2><span class="meta">delivered to date</span></div>'+
+    '<div class="block"><div class="stats s3">'+
+      '<div class="stat"><div class="l">Volume delivered</div><div class="v">'+fmt(totalL)+' <small>L</small></div></div>'+
+      '<div class="stat"><div class="l">Revenue</div><div class="v">'+fmt(totalRev)+' <small>GYD</small></div></div>'+
+      '<div class="stat"><div class="l">Completed orders</div><div class="v">'+delivered.length+'</div></div>'+
+    '</div></div>'+
+    '<div class="block"><div class="bh"><h3>'+ic("drop")+'Volume by product</h3></div><div class="bd"><div class="bars">'+volBars+'</div></div></div>'+
+    '<div class="block"><div class="bh"><h3>'+ic("cash")+'Revenue by product</h3></div><div class="bd"><div class="bars">'+revBars+'</div></div></div>'+
+    '<div class="block"><div class="bh"><h3>'+ic("users")+'Top customers by volume</h3></div><div class="bd"><div class="bars">'+custBars+'</div></div></div>';
+}
+function panelSettings(){
+  var team=[["You","Owner · Admin"],["Office desk","Dispatch"],["Rohan Persaud","Driver"],["Devi Singh","Driver"],["Mark Austin","Driver"]];
+  var rows=team.map(function(t){return '<tr><td><span class="cust">'+esc(t[0])+'</span></td><td>'+esc(t[1])+'</td></tr>';}).join("");
+  return '<div class="panel-h"><h2>Settings</h2><span class="meta">account & team</span></div>'+
+    '<div class="block"><div class="bh"><h3>'+ic("user")+'Company</h3></div><div class="bd">'+
+      '<div class="kv"><span class="k">Name</span><span class="vv">Kris Industries</span></div>'+
+      '<div class="kv"><span class="k">GEA licence</span><span class="vv">Import & Wholesale</span></div>'+
+      '<div class="kv"><span class="k">Depot</span><span class="vv">Georgetown (Region 4)</span></div>'+
+      '<div class="kv"><span class="k">Products</span><span class="vv">ULSD · LSD · Gasoline</span></div>'+
+      '<div class="kv"><span class="k">Currency</span><span class="vv">GYD</span></div>'+
+    '</div></div>'+
+    '<div class="block"><div class="bh"><h3>'+ic("users")+'Team & access</h3><span class="tag">'+team.length+' users</span></div><div class="bd flush"><div class="tw"><table><thead><tr><th>User</th><th>Role</th></tr></thead><tbody>'+rows+'</tbody></table></div></div></div>'+
+    '<button class="btn ghost" data-act="logout" data-role="owner">Sign out</button>';
+}
+function panelStock(){
+  var keys=["ulsd","lsd","gas"];
+  var tanks=keys.map(function(k){var low=stock[k]<40;var litres=Math.round(CAP[k]*stock[k]/100);
+    return '<div class="tank'+(low?' low':'')+'"><div class="top"><div class="nm">'+PROD[k]+'<small>cap '+fmt(CAP[k])+' L</small></div><div class="pct">'+stock[k]+'%</div></div><div class="meter"><span style="width:'+stock[k]+'%"></span></div><div class="sub">≈ '+fmt(litres)+' L on hand'+(low?' · reorder recommended':'')+'</div></div>';
+  }).join("");
+  return '<div class="panel-h"><h2>Stock & tanks</h2><span class="meta">Georgetown depot</span></div><div class="block"><div class="bd flush">'+tanks+'</div></div><div class="callout" style="margin:0"><div class="h">'+ic("alert")+'Reorder point</div><p>LSD is below the 40% threshold. In the full build this triggers an automatic reorder draft to your supplier.</p></div>';
+}
+
+/* ---------- shared phone shell ---------- */
+function phoneShell(title,sub,body,nav){
+  return '<div class="stage"><div class="phone"><div class="sbar"><span>9:41</span><span class="r">'+ic("signal")+ic("battery")+'</span></div>'+
+    '<div class="ptop"><h3>'+title+'</h3>'+(sub?'<div class="who">'+sub+'</div>':'')+'</div>'+
+    '<div class="pbody">'+body+'</div>'+nav+'</div></div>';
+}
+
+/* ---------- DRIVER ---------- */
+function driverJobs(){
+  var d=DRIVERS.find(function(x){return x.id===DRIVER_ME;});
+  var jobs=orders.filter(function(o){return o.driver===DRIVER_ME&&o.status!=="delivered"&&(o.today||o.status==="scheduled");});
+  var done=orders.filter(function(o){return o.driver===DRIVER_ME&&o.status==="delivered"&&o.today;});
+  var litres=done.reduce(function(a,o){return a+(o.deliveredLitres||0);},0);
+  var stats='<div class="dstats"><div class="d"><div class="v">'+jobs.length+'</div><div class="l">OPEN</div></div><div class="d"><div class="v">'+done.length+'</div><div class="l">DONE</div></div><div class="d"><div class="v">'+fmt(litres)+'</div><div class="l">LITRES</div></div><div class="d"><div class="v">96%</div><div class="l">ON-TIME</div></div></div>';
+  var pretrip=state.preTripDone
+    ? '<div class="callout" style="border-left-color:var(--ok)"><div class="h">'+ic("check")+'Pre-trip check complete</div><p>'+esc(d.vehicle)+' cleared at 07:12 · odometer 84,210 km.</p></div>'
+    : '<div class="callout"><div class="h">'+ic("alert")+'Pre-trip vehicle check</div><p>Complete the safety & compliance check before your first delivery.</p><button class="btn sm" data-act="pretrip" style="margin-top:9px">Start check</button></div>';
+  var cards=jobs.length?jobs.map(function(o,i){
+    var action=o.status==="in_transit"?'<button class="btn sm" data-act="open-deliver" data-id="'+o.id+'">'+ic("check")+'Confirm delivery</button>':'<button class="btn sm" data-act="start-job" data-id="'+o.id+'">Start trip</button>';
+    var instr=JOB_INSTR[o.customer];
+    return '<div class="job"><div class="jt"><div><div class="stop">STOP '+(i+1)+' · ETA '+esc(o.eta||"—")+'</div><div class="cust">'+esc(o.customer)+'</div><div class="prod">'+PSHORT[o.prod]+' · '+fmt(o.litres)+' L</div></div>'+stChip(o.status)+'</div>'+
+      '<div class="addr">'+ic("pin")+'<span>'+esc(o.addr)+'</span></div>'+
+      (instr?'<div class="instr">'+ic("alert")+'<span>'+esc(instr)+'</span></div>':'')+
+      '<div class="contact"><button class="cbtn" data-act="contact" data-kind="call" data-name="'+esc(o.customer)+'">'+ic("phone")+'Call</button><button class="cbtn" data-act="contact" data-kind="wa" data-name="'+esc(o.customer)+'">'+ic("chat")+'WhatsApp</button></div>'+
+      '<div class="jf"><button class="btn ghost sm" data-act="noop">'+ic("nav")+'Navigate</button>'+action+'</div></div>';
+  }).join(""):'<div class="empty">No open jobs — all deliveries done.</div>';
+  return stats+pretrip+'<div class="group-lbl">Today’s stops</div>'+cards+(done.length?'<button class="link" data-act="dtab" data-tab="history" style="align-self:center;padding:6px">View '+done.length+' completed →</button>':'');
+}
+function driverRoute(){
+  var jobs=orders.filter(function(o){return o.driver===DRIVER_ME&&o.status!=="delivered"&&(o.today||o.status==="scheduled");});
+  var stops=jobs.map(function(o,i){return '<div class="job"><div class="jt"><div><div class="stop">STOP '+(i+1)+' · ETA '+esc(o.eta||"—")+'</div><div class="cust">'+esc(o.customer)+'</div><div class="prod">'+PSHORT[o.prod]+' · '+fmt(o.litres)+' L · '+esc(o.addr)+'</div></div>'+stChip(o.status)+'</div></div>';}).join("")||'<div class="empty">No stops routed.</div>';
+  return '<div class="dstats"><div class="d"><div class="v">'+jobs.length+'</div><div class="l">STOPS</div></div><div class="d"><div class="v">48</div><div class="l">KM</div></div><div class="d"><div class="v">15:10</div><div class="l">EST FINISH</div></div></div>'+
+    '<div class="block" style="overflow:hidden">'+routeMap()+'</div>'+
+    '<div class="group-lbl">Stops in order</div>'+stops;
+}
+function driverHistory(){
+  var done=orders.filter(function(o){return o.driver===DRIVER_ME&&o.status==="delivered";});
+  if(!done.length)return '<div class="empty">No completed deliveries yet.</div>';
+  return '<div class="group-lbl">Completed deliveries</div>'+done.map(function(o){
+    return '<div class="job done"><div class="jt"><div><div class="cust">'+esc(o.customer)+'</div><div class="muted sm" style="margin-top:3px">'+PSHORT[o.prod]+' · '+fmt(o.deliveredLitres||o.litres)+' L · '+gyd(value(o))+'</div></div>'+stChip("delivered")+'</div><div class="proof">'+ic("check")+'<span>Proof '+esc(o.proof?o.proof.time:"")+(o.proof&&o.proof.sig?" · signature":"")+(o.proof&&o.proof.photo?" · photo":"")+'</span></div></div>';
+  }).join("");
+}
+function driverChat(){
+  return '<div class="chat">'+driverMsgs.map(function(m){return '<div class="msg '+(m.who==="me"?"me":"them")+'">'+esc(m.text)+'<div class="tm">'+esc(m.t)+'</div></div>';}).join("")+'</div>'+
+    '<div class="chatbar"><input id="dmsg" type="text" placeholder="Message dispatch…"><button class="sb" data-act="send-msg" aria-label="Send">'+ic("send")+'</button></div>';
+}
+function driverProfile(d){
+  var done=orders.filter(function(o){return o.driver===DRIVER_ME&&o.status==="delivered"&&o.today;});
+  var litres=done.reduce(function(a,o){return a+(o.deliveredLitres||0);},0);
+  return '<div class="prof"><div class="avatar">'+initials(d.name)+'</div><div><div class="nm">'+esc(d.name)+'</div><div class="sub">Driver · On shift since 07:12</div></div></div>'+
+    '<div class="dstats" style="margin-bottom:13px"><div class="d"><div class="v">'+done.length+'</div><div class="l">TODAY</div></div><div class="d"><div class="v">'+fmt(litres)+'</div><div class="l">LITRES</div></div><div class="d"><div class="v">96%</div><div class="l">ON-TIME</div></div></div>'+
+    '<div class="block"><div class="bd">'+
+      '<div class="kv"><span class="k">Vehicle</span><span class="vv">'+esc(d.vehicle)+'</span></div>'+
+      '<div class="kv"><span class="k">Licence</span><span class="vv">PDL · Class C / hazmat</span></div>'+
+      '<div class="kv"><span class="k">Shift</span><span class="vv">07:00 – 16:00</span></div>'+
+      '<div class="kv"><span class="k">Pre-trip check</span><span class="vv">'+(state.preTripDone?'<span class="pill-paid">Done</span>':'<span class="pill-due">Pending</span>')+'</span></div>'+
+    '</div></div>'+
+    '<button class="btn ghost block" data-act="logout" data-role="driver">Sign out</button>';
+}
+function renderDriver(){
+  if(!state.auth.driver){document.getElementById("view").innerHTML=driverAuth();return;}
+  var d=DRIVERS.find(function(x){return x.id===DRIVER_ME;});
+  var tab=state.driverTab;
+  var titles={jobs:"My jobs",route:"Today’s route",history:"History",messages:"Dispatch chat",me:"Profile"};
+  var body=tab==="route"?driverRoute():tab==="history"?driverHistory():tab==="messages"?driverChat():tab==="me"?driverProfile(d):driverJobs();
+  var sub=(tab==="jobs"||tab==="me")?esc(d.name)+" · "+esc(d.vehicle):"";
+  var navs=[["jobs","Jobs","list"],["route","Route","map"],["history","History","clock"],["messages","Chat","chat"],["me","Me","user"]];
+  var nav='<div class="pnav">'+navs.map(function(n){return '<button data-act="dtab" data-tab="'+n[0]+'" aria-current="'+(tab===n[0])+'">'+ic(n[2])+'<span>'+n[1]+'</span></button>';}).join("")+'</div>';
+  document.getElementById("view").innerHTML=phoneShell(titles[tab],sub,body,nav);
+  initMap();
+}
+
+/* ---------- CUSTOMER ---------- */
+var cDraft={prod:"ulsd",litres:5000,site:0,when:"asap",recurring:false};
+function custOrder(){
+  var segBtn=function(k){return '<button data-act="cprod" data-prod="'+k+'" aria-pressed="'+(cDraft.prod===k)+'">'+PSHORT[k]+'</button>';};
+  var qVal=cDraft.litres*PRICE[cDraft.prod];
+  var siteOpts=CUST_SITES.map(function(s,i){return '<option value="'+i+'"'+(i===cDraft.site?' selected':'')+'>'+esc(s.name)+'</option>';}).join("");
+  return '<div class="block"><div class="bd">'+
+    '<div class="field"><label>Product</label><div class="seg">'+segBtn("ulsd")+segBtn("lsd")+segBtn("gas")+'</div></div>'+
+    '<div class="field"><label for="litres">Quantity (litres)</label><input id="litres" type="number" min="500" step="500" value="'+cDraft.litres+'"><span class="hint">Price: '+gyd(PRICE[cDraft.prod])+' / L · bulk discount over 5,000 L</span></div>'+
+    '<div class="field"><label for="csite">Deliver to</label><select id="csite">'+siteOpts+'</select></div>'+
+    '<div class="field"><label>When</label><div class="datebtns"><button data-act="cwhen" data-when="asap" aria-pressed="'+(cDraft.when==="asap")+'">ASAP</button><button data-act="cwhen" data-when="scheduled" aria-pressed="'+(cDraft.when==="scheduled")+'">Schedule</button></div>'+(cDraft.when==="scheduled"?'<input type="date" style="margin-top:8px;border:1px solid var(--line-2);background:var(--surface);color:var(--ink);border-radius:var(--r-sm);padding:9px 10px;font-family:inherit;font-size:14px;width:100%">':'')+'</div>'+
+    '<div class="toggle"><div><div style="font-weight:600;font-size:13px">Recurring order</div><div class="faint sm">Repeat every week</div></div><button class="sw" data-act="crecur" aria-pressed="'+(cDraft.recurring)+'" aria-label="Recurring"></button></div>'+
+    '<div class="total"><span class="l">Estimated total</span><span class="v">'+gyd(qVal)+'</span></div>'+
+    '<button class="btn block" data-act="place-order">'+ic("send")+'Place order</button>'+
+    '<p class="hint" style="text-align:center;margin:9px 0 0">Pay on account (14-day terms) · MMG enabled</p>'+
+  '</div></div>';
+}
+function custOrders(){
+  var mine=orders.filter(function(o){return o.customer===CUSTOMER_ME;}).sort(function(a,b){var r={in_transit:0,scheduled:1,pending:2,delivered:3};return r[a.status]-r[b.status];});
+  var active=mine.find(function(o){return o.status!=="delivered";});
+  var trackHtml="";
+  if(active){
+    var steps=[["Order placed","done"],["Dispatched & scheduled",active.status==="pending"?"pending":"done"],["Out for delivery",active.status==="in_transit"?"now":"pending"],["Delivered + proof","pending"]];
+    trackHtml='<div class="block"><div class="bh"><h3>'+ic("truck")+'Tracking '+active.id+'</h3>'+stChip(active.status)+'</div><div class="bd"><div class="muted sm" style="margin-bottom:12px">'+PSHORT[active.prod]+' · '+fmt(active.litres)+' L'+(active.eta?' · ETA '+esc(active.eta):'')+'</div><div class="track">'+steps.map(function(s){return '<div class="s '+s[1]+'"><div class="dot">'+(s[1]==="done"?ic("check"):"")+'</div><div class="lbl">'+s[0]+'</div></div>';}).join("")+'</div></div></div>';
+  }
+  var rows=mine.map(function(o){
+    var right,sub;
+    if(o.status==="delivered"){sub=o.paid?"Delivered · paid":"Delivered · invoice due";right='<div class="rowbtns"><button class="btn ghost sm" data-act="open-receipt" data-id="'+o.id+'">Receipt</button><button class="btn ghost sm" data-act="reorder" data-id="'+o.id+'">Reorder</button></div>';}
+    else {sub=o.eta?"ETA "+esc(o.eta):"awaiting dispatch";right=stChip(o.status);}
+    return '<div class="mrow"><div><div class="mi">'+PSHORT[o.prod]+' · '+fmt(o.litres)+' L</div><div class="ms"><span class="oid">'+o.id+'</span> · '+sub+' · '+gyd(value(o))+'</div></div>'+right+'</div>';
+  }).join("");
+  var tripHtml=(active&&active.status==="in_transit")?'<div class="block"><div class="bh"><h3>'+ic("truck")+'Live tracking</h3>'+stChip("in_transit")+'</div><div class="bd" style="display:flex;flex-direction:column;gap:11px">'+tripCard(active)+'</div></div>':"";
+  return tripHtml+trackHtml+'<div class="block"><div class="bh"><h3>'+ic("list")+'Order history</h3></div><div class="bd">'+rows+'</div></div>';
+}
+function custInvoices(){
+  var inv=orders.filter(function(o){return o.customer===CUSTOMER_ME&&o.status==="delivered";});
+  var owed=inv.filter(function(o){return !o.paid;}).reduce(function(a,o){return a+value(o);},0);
+  var paid=inv.filter(function(o){return o.paid;}).reduce(function(a,o){return a+value(o);},0);
+  var rows=inv.map(function(o){
+    var right=o.paid?'<span class="pill-paid">Paid</span>':'<button class="btn sm" data-act="pay-invoice" data-id="'+o.id+'">Pay '+gyd(value(o))+'</button>';
+    return '<div class="mrow"><div><div class="mi">'+o.id+' · '+gyd(value(o))+'</div><div class="ms">'+PSHORT[o.prod]+' · '+fmt(o.deliveredLitres||o.litres)+' L · '+(o.proof?esc(o.proof.time):"")+'</div></div>'+right+'</div>';
+  }).join("");
+  return '<div class="dstats" style="margin-bottom:13px"><div class="d"><div class="v" style="color:var(--crit)">'+fmt(owed)+'</div><div class="l">DUE (GYD)</div></div><div class="d"><div class="v" style="color:var(--ok)">'+fmt(paid)+'</div><div class="l">PAID (GYD)</div></div></div>'+
+    (owed>0?'<button class="btn block" data-act="pay-all" style="margin-bottom:13px">'+ic("cash")+'Pay all due via MMG — '+gyd(owed)+'</button>':'')+
+    '<div class="block"><div class="bh"><h3>'+ic("file")+'Invoices</h3></div><div class="bd">'+rows+'</div></div>'+
+    '<p class="hint" style="text-align:center">Statements available monthly · 14-day payment terms</p>';
+}
+function custPrices(){
+  var list=Object.keys(PROD).map(function(k){return '<div class="pr"><div class="nm">'+PROD[k]+'<small>per litre, bulk</small></div><div class="v">'+gyd(PRICE[k])+'<small> /L</small></div></div>';}).join("");
+  return '<div class="block"><div class="bh"><h3>'+ic("drop")+'Today’s prices</h3><span class="tag">Eff. 26 Oct</span></div><div class="bd"><div class="prices">'+list+'</div></div></div>'+
+    '<div class="block"><div class="bh"><h3>'+ic("tag")+'Bulk discount tiers</h3></div><div class="bd">'+
+      '<div class="kv"><span class="k">2,000 – 5,000 L</span><span class="vv">list price</span></div>'+
+      '<div class="kv"><span class="k">5,001 – 10,000 L</span><span class="vv">− 2%</span></div>'+
+      '<div class="kv"><span class="k">10,000 L +</span><span class="vv">− 4%</span></div>'+
+    '</div></div>'+
+    '<p class="hint" style="text-align:center">Prices updated daily, tracking GEA-marked fuel costs.</p>';
+}
+function custAccount(){
+  var cu=CUSTOMERS.find(function(x){return x.name===CUSTOMER_ME;})||{};
+  var bal=custBalance(CUSTOMER_ME);var used=Math.min(100,Math.round(bal/(cu.limit||1)*100));
+  var sites=CUST_SITES.map(function(s){return '<div class="site">'+ic("pin")+'<div><div class="nm">'+esc(s.name)+'</div><div class="rg">'+esc(s.region)+'</div></div>'+(s.primary?'<span class="def">Default</span>':'')+'</div>';}).join("");
+  return '<div class="prof"><div class="avatar">'+initials(CUSTOMER_ME)+'</div><div><div class="nm">'+esc(CUSTOMER_ME)+'</div><div class="sub">'+esc(cu.segment||"")+'</div></div></div>'+
+    '<div class="block"><div class="bh"><h3>'+ic("cash")+'Credit</h3></div><div class="bd">'+
+      '<div class="meter"><span style="width:'+used+'%;background:'+(used>80?'var(--crit)':'var(--ink)')+'"></span></div>'+
+      '<div class="faint sm mono" style="margin-top:6px">'+gyd(bal)+' of '+gyd(cu.limit||0)+' used · '+used+'%</div></div></div>'+
+    '<div class="block"><div class="bd">'+
+      '<div class="kv"><span class="k">Region</span><span class="vv">'+esc(cu.region||"")+'</span></div>'+
+      '<div class="kv"><span class="k">Payment terms</span><span class="vv">'+esc(cu.terms||"")+'</span></div>'+
+      '<div class="kv"><span class="k">Account manager</span><span class="vv">Kris Industries · Sales</span></div>'+
+    '</div></div>'+
+    '<div class="block"><div class="bh"><h3>'+ic("pin")+'Delivery sites</h3></div><div class="bd">'+sites+'</div></div>'+
+    '<div class="block"><div class="bh"><h3>'+ic("phone")+'Support</h3></div><div class="bd">'+
+      '<div class="kv"><span class="k">Phone / WhatsApp</span><span class="selectable">+592 600 0000</span></div>'+
+      '<div class="kv"><span class="k">Email</span><span class="selectable">ops@krisindustries.gy</span></div></div></div>'+
+    '<div class="block"><div class="bh"><h3>Notifications</h3></div><div class="bd">'+
+      '<div class="toggle"><span class="sm" style="font-weight:600">Delivery updates</span><button class="sw" data-act="noop" aria-pressed="true"></button></div>'+
+      '<div class="toggle"><span class="sm" style="font-weight:600">Invoice reminders</span><button class="sw" data-act="noop" aria-pressed="true"></button></div>'+
+    '</div></div>'+
+    '<button class="btn ghost block" data-act="logout" data-role="customer">Sign out</button>';
+}
+function renderCustomer(){
+  if(!state.auth.customer){document.getElementById("view").innerHTML=customerAuth();return;}
+  var tab=state.custTab;
+  var owed=orders.filter(function(o){return o.customer===CUSTOMER_ME&&o.status==="delivered"&&!o.paid;}).reduce(function(a,o){return a+value(o);},0);
+  var titles={order:"Order fuel",orders:"My orders",invoices:"Invoices",prices:"Fuel prices",account:"Account"};
+  var body=tab==="orders"?custOrders():tab==="invoices"?custInvoices():tab==="prices"?custPrices():tab==="account"?custAccount():custOrder();
+  var sub=esc(CUSTOMER_ME)+" · Account in good standing";
+  var navs=[["order","Order","plus"],["orders","Orders","list"],["invoices","Invoices","cash"],["prices","Prices","tag"],["account","Account","user"]];
+  var nav='<div class="pnav">'+navs.map(function(n){var badge=(n[0]==="invoices"&&owed>0)?' ●':'';return '<button data-act="ctab" data-tab="'+n[0]+'" aria-current="'+(tab===n[0])+'">'+ic(n[2])+'<span>'+n[1]+badge+'</span></button>';}).join("")+'</div>';
+  document.getElementById("view").innerHTML=phoneShell(titles[tab],sub,body,nav);
+}
+
+/* ---------- delivery sheet ---------- */
+var sheetState=null;
+function openDeliver(id){
+  var o=orders.find(function(x){return x.id===id;});if(!o)return;
+  sheetState={id:id,photo:false,hasSig:false};
+  document.getElementById("sheet-root").innerHTML='<div class="overlay" data-act="close-sheet"><div class="sheet"><div class="sh-top"><h3>Confirm delivery</h3><button class="x" data-act="close-sheet" aria-label="Close">×</button></div><div class="sh-sub">'+esc(o.customer)+' · '+PSHORT[o.prod]+' · '+esc(o.addr)+'</div><div class="flabel">Litres delivered (metered)</div><input id="dl" class="dl-input" type="number" value="'+o.litres+'" step="10" style="margin-bottom:15px"><div class="flabel">Customer signature</div><div class="sig"><canvas id="sig" width="800" height="240"></canvas><div class="ph" id="sigph">Sign here</div></div><div class="sig-act"><span class="muted sm">Signed on glass</span><button class="link" data-act="clear-sig">Clear</button></div><div class="flabel" style="margin-top:15px">Delivery photo</div><div id="photo-slot"><button class="photo" data-act="add-photo">'+ic("camera")+'Capture photo of meter / drop</button></div><button class="btn block" data-act="complete-delivery" style="margin-top:17px">'+ic("check")+'Complete & save proof</button><p class="hint" style="text-align:center;margin:9px 0 0">Timestamped and geotagged automatically</p></div></div>';
+  initSig();
+}
+function initSig(){
+  var cv=document.getElementById("sig");if(!cv)return;
+  var ctx=cv.getContext("2d");ctx.lineWidth=3.5;ctx.lineCap="round";ctx.lineJoin="round";
+  ctx.strokeStyle=(getComputedStyle(document.documentElement).getPropertyValue("--ink")||"#1b1e22").trim();
+  var drawing=false,last=null;
+  function pos(e){var r=cv.getBoundingClientRect();var cx=(e.touches?e.touches[0].clientX:e.clientX)-r.left;var cy=(e.touches?e.touches[0].clientY:e.clientY)-r.top;return {x:cx*(cv.width/r.width),y:cy*(cv.height/r.height)};}
+  function down(e){drawing=true;last=pos(e);var ph=document.getElementById("sigph");if(ph)ph.style.display="none";if(sheetState)sheetState.hasSig=true;e.preventDefault();}
+  function move(e){if(!drawing)return;var p=pos(e);ctx.beginPath();ctx.moveTo(last.x,last.y);ctx.lineTo(p.x,p.y);ctx.stroke();last=p;e.preventDefault();}
+  cv.addEventListener("pointerdown",down);cv.addEventListener("pointermove",move);window.addEventListener("pointerup",function(){drawing=false;});
+}
+
+/* ---------- interactive map (pan + pinch/scroll zoom) ---------- */
+var mapS=null,mapBound=false;
+function mapToSvg(cx,cy){var r=mapS.svg.getBoundingClientRect();return {x:(cx-r.left)/r.width*800,y:(cy-r.top)/r.height*320};}
+function mapApply(){mapS.g.setAttribute("transform","translate("+mapS.tx.toFixed(2)+" "+mapS.ty.toFixed(2)+") scale("+mapS.k.toFixed(4)+")");}
+function mapClamp(){var k=mapS.k;if(mapS.tx>0)mapS.tx=0;if(mapS.ty>0)mapS.ty=0;var mnx=800*(1-k),mny=320*(1-k);if(mapS.tx<mnx)mapS.tx=mnx;if(mapS.ty<mny)mapS.ty=mny;}
+function mapZoomAt(x,y,f){if(!mapS)return;var k0=mapS.k,k=Math.min(6,Math.max(1,k0*f));mapS.tx=x-(x-mapS.tx)*(k/k0);mapS.ty=y-(y-mapS.ty)*(k/k0);mapS.k=k;mapClamp();mapApply();}
+function initMap(){
+  var svg=document.querySelector(".routemap");var g=svg?svg.querySelector("#mv"):null;
+  if(!svg||!g){mapS=null;return;}
+  mapS={svg:svg,g:g,k:1,tx:0,ty:0,drag:null,pinch:null};mapApply();
+  svg.addEventListener("wheel",function(e){e.preventDefault();var p=mapToSvg(e.clientX,e.clientY);mapZoomAt(p.x,p.y,e.deltaY<0?1.15:0.87);},{passive:false});
+  svg.addEventListener("pointerdown",function(e){if(e.pointerType==="touch")return;mapS.drag=mapToSvg(e.clientX,e.clientY);svg.classList.add("grabbing");});
+  svg.addEventListener("touchstart",function(e){
+    if(e.touches.length===1){mapS.drag=mapToSvg(e.touches[0].clientX,e.touches[0].clientY);mapS.pinch=null;}
+    else if(e.touches.length>=2){var a=mapToSvg(e.touches[0].clientX,e.touches[0].clientY),b=mapToSvg(e.touches[1].clientX,e.touches[1].clientY);mapS.pinch={d:Math.hypot(a.x-b.x,a.y-b.y)||1,k0:mapS.k,tx0:mapS.tx,ty0:mapS.ty,mid:{x:(a.x+b.x)/2,y:(a.y+b.y)/2}};mapS.drag=null;}
+  },{passive:false});
+  svg.addEventListener("touchmove",function(e){e.preventDefault();
+    if(mapS.pinch&&e.touches.length>=2){var a=mapToSvg(e.touches[0].clientX,e.touches[0].clientY),b=mapToSvg(e.touches[1].clientX,e.touches[1].clientY);var nd=Math.hypot(a.x-b.x,a.y-b.y);var mid={x:(a.x+b.x)/2,y:(a.y+b.y)/2};var k=Math.min(6,Math.max(1,mapS.pinch.k0*(nd/mapS.pinch.d)));var pl={x:(mapS.pinch.mid.x-mapS.pinch.tx0)/mapS.pinch.k0,y:(mapS.pinch.mid.y-mapS.pinch.ty0)/mapS.pinch.k0};mapS.k=k;mapS.tx=mid.x-k*pl.x;mapS.ty=mid.y-k*pl.y;mapClamp();mapApply();}
+    else if(mapS.drag&&e.touches.length===1){var p=mapToSvg(e.touches[0].clientX,e.touches[0].clientY);mapS.tx+=p.x-mapS.drag.x;mapS.ty+=p.y-mapS.drag.y;mapS.drag=p;mapClamp();mapApply();}
+  },{passive:false});
+  svg.addEventListener("touchend",function(e){if(e.touches.length===0){mapS.drag=null;mapS.pinch=null;}else if(e.touches.length===1){mapS.pinch=null;mapS.drag=mapToSvg(e.touches[0].clientX,e.touches[0].clientY);}});
+  if(!mapBound){mapBound=true;
+    window.addEventListener("pointermove",function(e){if(mapS&&mapS.drag&&e.pointerType!=="touch"){var p=mapToSvg(e.clientX,e.clientY);mapS.tx+=p.x-mapS.drag.x;mapS.ty+=p.y-mapS.drag.y;mapS.drag=p;mapClamp();mapApply();}});
+    window.addEventListener("pointerup",function(){if(mapS){mapS.drag=null;if(mapS.svg)mapS.svg.classList.remove("grabbing");}});
+  }
+}
+
+/* ---------- live trip detail sheet ---------- */
+function openTrip(id){
+  var o=orders.find(function(x){return x.id===id;})||orders.find(function(x){return x.status==="in_transit";});
+  if(!o)return;
+  var d=DRIVERS.find(function(x){return x.id===o.driver;})||DRIVERS[0];
+  var etaMin=o.etaMin||15,progress=o.progress||40,distKm=o.distKm||3.0;
+  document.getElementById("sheet-root").innerHTML='<div class="overlay" data-act="close-sheet"><div class="sheet">'+
+    '<div class="sh-top"><h3>Delivery '+o.id+'</h3><button class="x" data-act="close-sheet" aria-label="Close">×</button></div>'+
+    '<div style="margin-bottom:13px">'+stChip(o.status)+'</div>'+
+    '<div class="trip-eta"><div><div class="big">~'+etaMin+' min</div><div class="muted sm">ETA '+esc(o.eta||"—")+' · '+distKm+' km remaining</div></div>'+ic("truck")+'</div>'+
+    '<div class="tc-bar" style="margin:12px 0 16px"><span style="width:'+progress+'%"></span></div>'+
+    '<div class="prof"><div class="avatar">'+initials(d.name)+'</div><div><div class="nm">'+esc(d.name)+'</div><div class="sub">Driver · '+esc(d.vehicle)+'</div></div></div>'+
+    '<div class="contact" style="margin-bottom:15px"><button class="cbtn" data-act="contact" data-kind="call" data-name="'+esc(d.name)+'">'+ic("phone")+'Call</button><button class="cbtn" data-act="contact" data-kind="wa" data-name="'+esc(d.name)+'">'+ic("chat")+'WhatsApp</button></div>'+
+    '<div class="block"><div class="bd">'+
+      '<div class="kv"><span class="k">Delivering</span><span class="vv">'+PSHORT[o.prod]+' · '+fmt(o.litres)+' L</span></div>'+
+      '<div class="kv"><span class="k">To</span><span class="vv">'+esc(o.customer)+'</span></div>'+
+      '<div class="kv"><span class="k">Address</span><span class="vv" style="max-width:60%">'+esc(o.addr)+'</span></div>'+
+      '<div class="kv"><span class="k">Order value</span><span class="vv">'+gyd(value(o))+'</span></div>'+
+      '<div class="kv"><span class="k">Licence</span><span class="vv">Class C / hazmat</span></div>'+
+      '<div class="kv"><span class="k">On-time rate</span><span class="vv">96%</span></div>'+
+    '</div></div>'+
+    '<p class="hint" style="text-align:center">Signature & photo captured on arrival</p>'+
+  '</div></div>';
+}
+
+/* ---------- pre-trip check sheet ---------- */
+function openPretrip(){
+  var items=["Tyres & wheel nuts","Lights & indicators","Brakes & handbrake","Fuel hoses & couplings","Fire extinguisher present","Spill kit & PPE on board","Meter calibration seal intact"];
+  document.getElementById("sheet-root").innerHTML='<div class="overlay" data-act="close-sheet"><div class="sheet"><div class="sh-top"><h3>Pre-trip vehicle check</h3><button class="x" data-act="close-sheet" aria-label="Close">×</button></div><div class="sh-sub">Truck GPP 4417 · complete before first delivery</div>'+
+    '<div class="check">'+items.map(function(t){return '<label><input type="checkbox" checked>'+esc(t)+'</label>';}).join("")+'</div>'+
+    '<div class="flabel" style="margin-top:15px">Odometer (km)</div><input class="dl-input" type="number" value="84210">'+
+    '<button class="btn block" data-act="confirm-pretrip" style="margin-top:15px">'+ic("check")+'Confirm & start shift</button></div></div>';
+}
+
+/* ---------- owner: new order sheet ---------- */
+function openNewOrder(){
+  var custOpts=CUSTOMERS.map(function(c){return '<option>'+esc(c.name)+'</option>';}).join("");
+  document.getElementById("sheet-root").innerHTML='<div class="overlay" data-act="close-sheet"><div class="sheet">'+
+    '<div class="sh-top"><h3>New order</h3><button class="x" data-act="close-sheet" aria-label="Close">×</button></div>'+
+    '<div class="sh-sub">Log an order from a phone or walk-in customer</div>'+
+    '<div class="field"><label>Customer</label><select id="no-cust">'+custOpts+'</select></div>'+
+    '<div class="field"><label>Product</label><select id="no-prod"><option value="ulsd">Ultra Low Sulphur Diesel</option><option value="lsd">Low Sulphur Diesel</option><option value="gas">Gasoline</option></select></div>'+
+    '<div class="field"><label>Quantity (litres)</label><input id="no-litres" type="number" value="5000" step="500"></div>'+
+    '<div class="field"><label>Delivery address</label><input id="no-addr" type="text" placeholder="Site / yard address"></div>'+
+    '<button class="btn block" data-act="create-order">'+ic("plus")+'Create order</button>'+
+  '</div></div>';
+}
+
+/* ---------- customer: delivery receipt + rating ---------- */
+var receiptId=null,receiptRating=0;
+function starRow(rating){var s="";for(var i=1;i<=5;i++){s+='<button class="star'+(i<=rating?' on':'')+'" data-act="rate" data-n="'+i+'" aria-label="'+i+' star"><svg viewBox="0 0 24 24">'+ICONS.star+'</svg></button>';}return '<div class="stars">'+s+'</div>';}
+function openReceipt(id){
+  var o=orders.find(function(x){return x.id===id;});if(!o)return;
+  if(receiptId!==id)receiptRating=o.rating||0; receiptId=id;
+  var d=DRIVERS.find(function(x){return x.id===o.driver;})||DRIVERS[0];
+  document.getElementById("sheet-root").innerHTML='<div class="overlay" data-act="close-sheet"><div class="sheet">'+
+    '<div class="sh-top"><h3>Receipt '+o.id+'</h3><button class="x" data-act="close-sheet" aria-label="Close">×</button></div>'+
+    '<div style="margin-bottom:13px">'+stChip("delivered")+'</div>'+
+    '<div class="rsum"><div class="big">'+fmt(o.deliveredLitres||o.litres)+' L</div><div class="sub">'+PROD[o.prod]+' delivered '+esc(o.proof?o.proof.time:"")+'</div></div>'+
+    '<div class="block"><div class="bd">'+
+      '<div class="kv"><span class="k">Driver</span><span class="vv">'+esc(d.name)+'</span></div>'+
+      '<div class="kv"><span class="k">Vehicle</span><span class="vv">'+esc(d.vehicle)+'</span></div>'+
+      '<div class="kv"><span class="k">Proof</span><span class="vv">'+((o.proof&&o.proof.sig)?"Signature":"—")+((o.proof&&o.proof.photo)?" + photo":"")+'</span></div>'+
+      '<div class="kv"><span class="k">Amount</span><span class="vv">'+gyd(value(o))+'</span></div>'+
+      '<div class="kv"><span class="k">Payment</span><span class="vv">'+(o.paid?'<span class="pill-paid">Paid</span>':'<span class="pill-due">Due</span>')+'</span></div>'+
+    '</div></div>'+
+    '<div class="flabel" style="text-align:center">Rate this delivery</div>'+starRow(receiptRating)+
+    '<button class="btn block" data-act="submit-rating"'+(receiptRating>0?'':' disabled')+'>'+ic("check")+(o.rating?'Update rating':'Submit rating')+'</button>'+
+  '</div></div>';
+}
+
+/* ---------- events ---------- */
+function setRole(r){state.role=r;closeNotif();document.querySelectorAll(".tabs button").forEach(function(b){b.setAttribute("aria-pressed",b.dataset.role===r);});render();window.scrollTo({top:0,behavior:"smooth"});}
+function render(){if(state.role==="owner")renderOwner();else if(state.role==="driver")renderDriver();else renderCustomer();}
+var toastT;
+function toast(msg){var el=document.getElementById("toast");el.innerHTML=ic("check")+'<span>'+msg+'</span>';el.classList.add("show");clearTimeout(toastT);toastT=setTimeout(function(){el.classList.remove("show");},2600);}
+function closeSheet(){document.getElementById("sheet-root").innerHTML="";sheetState=null;}
+
+document.addEventListener("click",function(e){
+  if(e.target.classList&&e.target.classList.contains("overlay")){closeSheet();return;}
+  if(state.notifOpen&&!e.target.closest("#notif-root")&&!e.target.closest(".notif-btn"))closeNotif();
+  var el=e.target.closest("[data-act]");if(!el)return;
+  var act=el.dataset.act;
+  if(act==="role")setRole(el.dataset.role);
+  else if(act==="otab"){state.ownerTab=el.dataset.tab;renderOwner();}
+  else if(act==="notif")toggleNotif();
+  else if(act==="theme"){var cur=document.documentElement.getAttribute("data-theme");var next=cur==="dark"?"light":(cur==="light"?"dark":(matchMedia("(prefers-color-scheme: dark)").matches?"light":"dark"));document.documentElement.setAttribute("data-theme",next);try{localStorage.setItem("kfo-theme",next);}catch(e2){}}
+  else if(act==="dismiss-intro"){var i=document.getElementById("intro");if(i)i.hidden=true;}
+  else if(act==="dispatch"){var sel=document.querySelector('[data-assign="'+el.dataset.id+'"]');var o=orders.find(function(x){return x.id===el.dataset.id;});if(o&&sel){o.driver=sel.value;o.status="scheduled";o.eta="Scheduled";logEvent(o.id+" assigned to "+driverName(sel.value));renderOwner();toast("Order "+o.id+" assigned to "+driverName(sel.value));}}
+  else if(act==="start-job"){var o2=orders.find(function(x){return x.id===el.dataset.id;});if(o2){o2.status="in_transit";o2.eta="~18 min";o2.etaMin=18;o2.progress=14;o2.distKm=5.4;logEvent(o2.id+" en route to "+o2.customer);renderDriver();toast("Trip started — customer notified");}}
+  else if(act==="open-deliver")openDeliver(el.dataset.id);
+  else if(act==="open-trip")openTrip(el.dataset.id);
+  else if(act==="open-new-order")openNewOrder();
+  else if(act==="create-order"){var cu=document.getElementById("no-cust").value;var pr=document.getElementById("no-prod").value;var li=parseInt(document.getElementById("no-litres").value,10)||0;var ad=(document.getElementById("no-addr").value||"").trim()||"Georgetown (Region 4)";if(li<500){toast("Enter at least 500 L");return;}var nid="KI-"+(seq++);orders.unshift({id:nid,customer:cu,prod:pr,litres:li,status:"pending",driver:null,addr:ad,today:true,paid:false,eta:null,proof:null});logEvent(nid+" created by office for "+cu);state.ownerTab="dispatch";closeSheet();renderOwner();toast("Order "+nid+" created");}
+  else if(act==="open-receipt")openReceipt(el.dataset.id);
+  else if(act==="rate"){receiptRating=parseInt(el.dataset.n,10)||0;openReceipt(receiptId);}
+  else if(act==="submit-rating"){if(receiptId){var rr=orders.find(function(x){return x.id===receiptId;});if(rr){rr.rating=receiptRating;logEvent("Customer rated "+rr.id+" "+receiptRating+"★");}closeSheet();renderCustomer();toast("Thanks for your feedback");}}
+  else if(act==="close-sheet")closeSheet();
+  else if(act==="clear-sig"){var cv=document.getElementById("sig");if(cv){cv.getContext("2d").clearRect(0,0,cv.width,cv.height);var ph=document.getElementById("sigph");if(ph)ph.style.display="grid";if(sheetState)sheetState.hasSig=false;}}
+  else if(act==="add-photo"){if(sheetState)sheetState.photo=true;document.getElementById("photo-slot").innerHTML='<div class="photo-ok">'+ic("check")+'<span>Photo captured</span><span class="muted sm" style="margin-left:auto;font-weight:500">meter_'+(sheetState?sheetState.id:'')+'.jpg</span></div>';}
+  else if(act==="complete-delivery"){var dl=document.getElementById("dl");var litres=dl?parseInt(dl.value,10):0;var o3=orders.find(function(x){return x.id===sheetState.id;});if(o3){o3.status="delivered";o3.deliveredLitres=litres||o3.litres;o3.today=true;o3.proof={time:"Just now",sig:sheetState.hasSig,photo:sheetState.photo};logEvent(o3.id+" delivered — proof saved ("+fmt(o3.deliveredLitres)+" L)");}closeSheet();renderDriver();toast("Delivery confirmed — proof saved");}
+  else if(act==="cprod"){cDraft.prod=el.dataset.prod;renderCustomer();}
+  else if(act==="place-order"){var q=document.getElementById("litres");var l2=q?parseInt(q.value,10):cDraft.litres;if(!l2||l2<500){toast("Enter at least 500 L");return;}cDraft.litres=l2;var sel=document.getElementById("csite");if(sel)cDraft.site=parseInt(sel.value,10)||0;var site=CUST_SITES[cDraft.site]||CUST_SITES[0];var id="KI-"+(seq++);orders.unshift({id:id,customer:CUSTOMER_ME,prod:cDraft.prod,litres:l2,status:"pending",driver:null,addr:site.name+" ("+site.region+")",today:true,paid:false,eta:(cDraft.when==="scheduled"?"Scheduled":null),proof:null});logEvent(id+" placed by "+CUSTOMER_ME+" ("+PSHORT[cDraft.prod]+" "+fmt(l2)+" L)"+(cDraft.recurring?" · recurring":""));state.custTab="orders";renderCustomer();toast("Order "+id+" placed — sent to Kris Industries");}
+  else if(act==="mark-paid"){var o4=orders.find(function(x){return x.id===el.dataset.id;});if(o4){o4.paid=true;logEvent("Payment recorded — "+o4.id+" ("+gyd(value(o4))+")");renderOwner();toast("Invoice "+o4.id+" marked paid");}}
+  else if(act==="pay-invoice"){var o5=orders.find(function(x){return x.id===el.dataset.id;});if(o5){o5.paid=true;logEvent("Payment received via MMG — "+o5.id+" ("+gyd(value(o5))+")");renderCustomer();toast("Payment sent — "+o5.id);}}
+  else if(act==="auth-login"){var r=el.dataset.role;state.auth[r]=true;state.authMode[r]="login";if(r==="owner")renderOwner();else if(r==="driver")renderDriver();else renderCustomer();toast("Signed in");}
+  else if(act==="auth-to-signup"){var rs=el.dataset.role;state.authMode[rs]="signup";state.su[rs]=1;if(rs==="driver")renderDriver();else renderCustomer();}
+  else if(act==="auth-to-login"){var rl=el.dataset.role;state.authMode[rl]="login";if(rl==="driver")renderDriver();else renderCustomer();}
+  else if(act==="su-back"){var rb=el.dataset.role;state.su[rb]=Math.max(1,state.su[rb]-1);if(rb==="driver")renderDriver();else renderCustomer();}
+  else if(act==="su-next"){var rn=el.dataset.role;var mx=rn==="customer"?3:2;if(state.su[rn]>=mx){state.auth[rn]=true;state.authMode[rn]="login";toast("Account created — welcome to Kris Industries");}else{state.su[rn]++;}if(rn==="driver")renderDriver();else renderCustomer();}
+  else if(act==="logout"){var ro=el.dataset.role;state.auth[ro]=false;state.authMode[ro]="login";if(ro==="owner"){state.ownerTab="overview";renderOwner();}else if(ro==="driver"){state.driverTab="jobs";renderDriver();}else{state.custTab="order";renderCustomer();}closeNotif();toast("Signed out");}
+  else if(act==="dtab"){state.driverTab=el.dataset.tab;renderDriver();}
+  else if(act==="ctab"){state.custTab=el.dataset.tab;renderCustomer();}
+  else if(act==="pretrip")openPretrip();
+  else if(act==="confirm-pretrip"){state.preTripDone=true;closeSheet();renderDriver();toast("Pre-trip check saved — shift started");}
+  else if(act==="send-msg"){var mi=document.getElementById("dmsg");var tx=mi?mi.value.trim():"";if(tx){driverMsgs.push({who:"me",t:"Now",text:tx});renderDriver();}}
+  else if(act==="contact"){toast((el.dataset.kind==="wa"?"Opening WhatsApp — ":"Calling — ")+(el.dataset.name||"customer"));}
+  else if(act==="cwhen"){cDraft.when=el.dataset.when;renderCustomer();}
+  else if(act==="crecur"){cDraft.recurring=!cDraft.recurring;renderCustomer();}
+  else if(act==="reorder"){var ro=orders.find(function(x){return x.id===el.dataset.id;});if(ro){var nid="KI-"+(seq++);orders.unshift({id:nid,customer:CUSTOMER_ME,prod:ro.prod,litres:ro.litres,status:"pending",driver:null,addr:ro.addr,today:true,paid:false,eta:null,proof:null});logEvent(nid+" re-ordered by "+CUSTOMER_ME);state.custTab="orders";renderCustomer();toast("Re-ordered — "+nid);}}
+  else if(act==="map-zoom"){var dir=el.dataset.dir;if(dir==="reset"){if(mapS){mapS.k=1;mapS.tx=0;mapS.ty=0;mapApply();}}else mapZoomAt(400,160,dir==="in"?1.4:0.714);}
+  else if(act==="pay-all"){var n=0;orders.forEach(function(o){if(o.customer===CUSTOMER_ME&&o.status==="delivered"&&!o.paid){o.paid=true;n++;}});if(n){logEvent(n+" invoice(s) paid via MMG by "+CUSTOMER_ME);renderCustomer();toast(n+" invoice(s) paid");}}
+},false);
+
+document.addEventListener("input",function(e){if(e.target&&e.target.id==="litres"){var v=parseInt(e.target.value,10);if(v)cDraft.litres=v;var qv=document.querySelector(".total .v");if(qv)qv.textContent=gyd((v||0)*PRICE[cDraft.prod]);}});
+
+render();updateBell();
+</script>
